@@ -1,0 +1,19 @@
+imageType:
+  Original: {}
+
+setting:
+  binWidth: 1
+  force2D: true
+  force2Ddimension: 0
+  resampledPixelSpacing: null
+  normalize: false
+  preCrop: false
+  label: 1
+  interpolator: sitkBSpline
+
+featureClass:
+  firstorder:
+  glcm:
+  glrlm:
+  glszm:
+  ngtdm:
