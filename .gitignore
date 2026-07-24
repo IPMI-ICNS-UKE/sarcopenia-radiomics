@@ -219,3 +219,6 @@ __marimo__/
 
 # Project-specific
 .vscode
+*.pt
+*.pth
+*.torch
