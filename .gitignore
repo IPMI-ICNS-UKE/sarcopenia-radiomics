@@ -222,3 +222,5 @@ __marimo__/
 *.pt
 *.pth
 *.torch
+external/*
+!external/README.md
