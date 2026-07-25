@@ -37,11 +37,13 @@ def compute_raw_values(patient_id: str, patient_data: PatientL3Data) -> List[Dic
             musclefat_2d=patient_data.musclefat_2d,
             height_m=patient_data.height_m,
         )
-        rows.append({
-            "patient_id": patient_id,
-            "rater": rater,
-            **biomarkers,
-        })
+        rows.append(
+            {
+                "patient_id": patient_id,
+                "rater": rater,
+                **biomarkers,
+            }
+        )
     return rows
 
 

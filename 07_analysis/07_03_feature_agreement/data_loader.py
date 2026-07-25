@@ -16,7 +16,7 @@ from mask import build_base_patient_context, extract_axial_slice, manual_and_mod
 class PatientL3Data(NamedTuple):
     ct_2d: sitk.Image
     musclefat_2d: sitk.Image
-    masks_by_rater: Dict[str, sitk.Image]     # {"i": ..., "j": ..., "a": ...}
+    masks_by_rater: Dict[str, sitk.Image]  # {"i": ..., "j": ..., "a": ...}
     height_m: float
 
 
@@ -52,13 +52,14 @@ def get_patient_l3_data(patient_id: str, height_m: float) -> PatientL3Data:
 
     slice_index_ct = l3_masksets[0][2]
     masks_by_rater = {
-        mask_name.split("_", 1)[0]: mask_2d
-        for mask_name, _level, _idx, mask_2d in l3_masksets
+        mask_name.split("_", 1)[0]: mask_2d for mask_name, _level, _idx, mask_2d in l3_masksets
     }
 
     ct_2d = extract_axial_slice(ctx["ct"], slice_index_ct)
 
-    musclefat_path = config.COHORT_CFG.images_root / patient_id / f"{patient_id}{config.MUSCLEFAT_FILE_SUFFIX}"
+    musclefat_path = (
+        config.COHORT_CFG.images_root / patient_id / f"{patient_id}{config.MUSCLEFAT_FILE_SUFFIX}"
+    )
     musclefat_3d = read_image(musclefat_path, sitk.sitkFloat32)
     idx_musclefat = axial_index_from_reference_to_target(ctx["ct"], musclefat_3d, slice_index_ct)
     musclefat_2d = extract_axial_slice(musclefat_3d, idx_musclefat)

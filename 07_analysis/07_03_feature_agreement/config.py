@@ -8,9 +8,8 @@ if str(FEATURE_EXTRACTION_UTILS_DIR) not in sys.path:
 
 from common_config import COHORT1, CommonRunConfig  # noqa: E402
 
-# ─── Cohort / run config ───────────────────────────────────────────────────────
+# Cohort / run config
 # Only cohort 1 has manual reader annotations (manual_annotation == 1).
-
 COHORT_CFG = COHORT1
 RUN_CFG = CommonRunConfig()
 
@@ -19,11 +18,10 @@ LEVEL = "l3"
 
 MUSCLEFAT_FILE_SUFFIX = "-MuscleFat.nii.gz"
 
-# ─── Reader / automated identifiers ────────────────────────────────────────────
+# Reader / automated identifiers
 # Matches the (mask_name, level, slice_index, mask_2d) triplets produced by
 # manual_and_model_masksets(): "i_*" = Reader 1 (Isabel), "j_*" = Reader 2
 # (Jenni), "a_*" = automated segmentation.
-
 READER_1 = "i"
 READER_2 = "j"
 AUTOMATED = "a"
@@ -34,8 +32,7 @@ RATER_LABELS = {
     AUTOMATED: "Automated",
 }
 
-# ─── Biomarkers to evaluate ─────────────────────────────────────────────────────
-
+# Biomarkers to evaluate
 BIOMARKERS = ("smi_2d", "mra_2d", "ff_2d")
 BIOMARKER_LABELS = {
     "smi_2d": "2D SMI",
@@ -43,8 +40,7 @@ BIOMARKER_LABELS = {
     "ff_2d": "2D Muscle fat fraction",
 }
 
-# ─── Output ─────────────────────────────────────────────────────────────────────
-
+# Output
 REPO_ROOT = THIS_DIR.parent.parent
 OUTPUT_ROOT = str(REPO_ROOT / "output")
 OUTPUT_SUBFOLDER = "07_03_feature_agreement"

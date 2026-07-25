@@ -16,9 +16,15 @@ def compute_icc_with_ci(raw_values_df: pd.DataFrame, biomarker: str) -> dict:
     if n_subjects < 2 or n_raters < 2:
         return {
             "feature": biomarker,
-            "icc": np.nan, "ci_low": np.nan, "ci_high": np.nan,
-            "f_stat": np.nan, "df1": np.nan, "df2": np.nan, "p_value": np.nan,
-            "n_subjects": int(n_subjects), "n_raters": int(n_raters),
+            "icc": np.nan,
+            "ci_low": np.nan,
+            "ci_high": np.nan,
+            "f_stat": np.nan,
+            "df1": np.nan,
+            "df2": np.nan,
+            "p_value": np.nan,
+            "n_subjects": int(n_subjects),
+            "n_raters": int(n_raters),
         }
 
     icc_table = intraclass_corr(

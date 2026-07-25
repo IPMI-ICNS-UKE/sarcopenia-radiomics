@@ -6,13 +6,6 @@ spectral CT muscle fat fraction — on the same 15-patient manual-annotation
 subset used by `07_02_segmentation_agreement`. Corresponds to Appendix S4,
 "Biomarker Agreement across Segmentation Methods."
 
-## What it produces (in `output/07_03_feature_agreement/`)
-
-- `feature_agreement_raw_values.csv` — one row per (patient, rater): `smi_2d`,
-  `mra_2d`, `ff_2d`.
-- `feature_agreement_icc_summary.csv` — one row per biomarker: ICC(2,1) point
-  estimate, 95% CI, F-statistic, df1/df2, p-value, n_subjects, n_raters.
-
 ## Layout
 
 | File | Role |
@@ -22,3 +15,19 @@ subset used by `07_02_segmentation_agreement`. Corresponds to Appendix S4,
 | `feature_utils.py` | Computes SMI/MRA/muscle-fat-fraction per rater mask, reusing the exact per-slice computation from `02_feature_extraction/utils/clinical_features.py` (HU-thresholded mask → area/mean-intensity). |
 | `icc_utils.py` | ICC(2,1) with 95% CI via `pingouin.intraclass_corr` (`Type == "ICC2"` — two-way random, absolute agreement, single measure, matching ICC(2,1) exactly). Point estimate cross-checked against the from-scratch formula in `03_feature_stability/utils/icc.py`. |
 | `run.py` | Orchestrates all of the above. |
+
+## Running
+
+```bash
+python run.py
+```
+
+## Output layout
+
+`output/07_03_feature_agreement/`:
+
+- `feature_agreement_raw_values.csv` — one row per (patient, rater): `smi_2d`,
+  `mra_2d`, `ff_2d`.
+- `feature_agreement_icc_summary.csv` — one row per biomarker: ICC(2,1) point
+  estimate, 95% CI, F-statistic, df1/df2, p-value, n_subjects, n_raters.
+
