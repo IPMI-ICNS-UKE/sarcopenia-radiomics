@@ -90,37 +90,95 @@ def build_classification_metrics_table(
     rows = []
     for _, r in df_metrics.iterrows():
         row_d = r.to_dict()
-        rows.append({
-            "model_name": r["model_name"],
-            "n_features": _get(row_d, "n_features"),
-            "selected_threshold": round(float(_get(row_d, "selected_threshold")), decimals)
-                if not pd.isna(_get(row_d, "selected_threshold")) else float("nan"),
-            "AUC": round(float(r["auc"]), decimals) if not pd.isna(r["auc"]) else float("nan"),
-            "AUC_CI95": format_ci(_get(row_d, "auc"), _get(row_d, "auc_ci_low"), _get(row_d, "auc_ci_high"), decimals),
-            "Balanced_Accuracy": round(float(_get(row_d, "balanced_accuracy")), decimals)
-                if not pd.isna(_get(row_d, "balanced_accuracy")) else float("nan"),
-            "Balanced_Accuracy_CI95": format_ci(_get(row_d, "balanced_accuracy"), _get(row_d, "balanced_accuracy_ci_low"), _get(row_d, "balanced_accuracy_ci_high"), decimals),
-            "Sensitivity": round(float(_get(row_d, "sensitivity")), decimals)
-                if not pd.isna(_get(row_d, "sensitivity")) else float("nan"),
-            "Sensitivity_CI95": format_ci(_get(row_d, "sensitivity"), _get(row_d, "sensitivity_ci_low"), _get(row_d, "sensitivity_ci_high"), decimals),
-            "Specificity": round(float(_get(row_d, "specificity")), decimals)
-                if not pd.isna(_get(row_d, "specificity")) else float("nan"),
-            "Specificity_CI95": format_ci(_get(row_d, "specificity"), _get(row_d, "specificity_ci_low"), _get(row_d, "specificity_ci_high"), decimals),
-            "PPV": round(float(_get(row_d, "ppv")), decimals)
-                if not pd.isna(_get(row_d, "ppv")) else float("nan"),
-            "PPV_CI95": format_ci(_get(row_d, "ppv"), _get(row_d, "ppv_ci_low"), _get(row_d, "ppv_ci_high"), decimals),
-            "NPV": round(float(_get(row_d, "npv")), decimals)
-                if not pd.isna(_get(row_d, "npv")) else float("nan"),
-            "NPV_CI95": format_ci(_get(row_d, "npv"), _get(row_d, "npv_ci_low"), _get(row_d, "npv_ci_high"), decimals),
-            "Brier": round(float(_get(row_d, "brier")), decimals)
-                if not pd.isna(_get(row_d, "brier")) else float("nan"),
-            "Brier_CI95": format_ci(_get(row_d, "brier"), _get(row_d, "brier_ci_low"), _get(row_d, "brier_ci_high"), decimals),
-            "TP": int(_get(row_d, "tp")) if not pd.isna(_get(row_d, "tp")) else float("nan"),
-            "TN": int(_get(row_d, "tn")) if not pd.isna(_get(row_d, "tn")) else float("nan"),
-            "FP": int(_get(row_d, "fp")) if not pd.isna(_get(row_d, "fp")) else float("nan"),
-            "FN": int(_get(row_d, "fn")) if not pd.isna(_get(row_d, "fn")) else float("nan"),
-            "N": int(_get(row_d, "n")) if not pd.isna(_get(row_d, "n")) else float("nan"),
-        })
+        rows.append(
+            {
+                "model_name": r["model_name"],
+                "n_features": _get(row_d, "n_features"),
+                "selected_threshold": (
+                    round(float(_get(row_d, "selected_threshold")), decimals)
+                    if not pd.isna(_get(row_d, "selected_threshold"))
+                    else float("nan")
+                ),
+                "AUC": round(float(r["auc"]), decimals) if not pd.isna(r["auc"]) else float("nan"),
+                "AUC_CI95": format_ci(
+                    _get(row_d, "auc"),
+                    _get(row_d, "auc_ci_low"),
+                    _get(row_d, "auc_ci_high"),
+                    decimals,
+                ),
+                "Balanced_Accuracy": (
+                    round(float(_get(row_d, "balanced_accuracy")), decimals)
+                    if not pd.isna(_get(row_d, "balanced_accuracy"))
+                    else float("nan")
+                ),
+                "Balanced_Accuracy_CI95": format_ci(
+                    _get(row_d, "balanced_accuracy"),
+                    _get(row_d, "balanced_accuracy_ci_low"),
+                    _get(row_d, "balanced_accuracy_ci_high"),
+                    decimals,
+                ),
+                "Sensitivity": (
+                    round(float(_get(row_d, "sensitivity")), decimals)
+                    if not pd.isna(_get(row_d, "sensitivity"))
+                    else float("nan")
+                ),
+                "Sensitivity_CI95": format_ci(
+                    _get(row_d, "sensitivity"),
+                    _get(row_d, "sensitivity_ci_low"),
+                    _get(row_d, "sensitivity_ci_high"),
+                    decimals,
+                ),
+                "Specificity": (
+                    round(float(_get(row_d, "specificity")), decimals)
+                    if not pd.isna(_get(row_d, "specificity"))
+                    else float("nan")
+                ),
+                "Specificity_CI95": format_ci(
+                    _get(row_d, "specificity"),
+                    _get(row_d, "specificity_ci_low"),
+                    _get(row_d, "specificity_ci_high"),
+                    decimals,
+                ),
+                "PPV": (
+                    round(float(_get(row_d, "ppv")), decimals)
+                    if not pd.isna(_get(row_d, "ppv"))
+                    else float("nan")
+                ),
+                "PPV_CI95": format_ci(
+                    _get(row_d, "ppv"),
+                    _get(row_d, "ppv_ci_low"),
+                    _get(row_d, "ppv_ci_high"),
+                    decimals,
+                ),
+                "NPV": (
+                    round(float(_get(row_d, "npv")), decimals)
+                    if not pd.isna(_get(row_d, "npv"))
+                    else float("nan")
+                ),
+                "NPV_CI95": format_ci(
+                    _get(row_d, "npv"),
+                    _get(row_d, "npv_ci_low"),
+                    _get(row_d, "npv_ci_high"),
+                    decimals,
+                ),
+                "Brier": (
+                    round(float(_get(row_d, "brier")), decimals)
+                    if not pd.isna(_get(row_d, "brier"))
+                    else float("nan")
+                ),
+                "Brier_CI95": format_ci(
+                    _get(row_d, "brier"),
+                    _get(row_d, "brier_ci_low"),
+                    _get(row_d, "brier_ci_high"),
+                    decimals,
+                ),
+                "TP": int(_get(row_d, "tp")) if not pd.isna(_get(row_d, "tp")) else float("nan"),
+                "TN": int(_get(row_d, "tn")) if not pd.isna(_get(row_d, "tn")) else float("nan"),
+                "FP": int(_get(row_d, "fp")) if not pd.isna(_get(row_d, "fp")) else float("nan"),
+                "FN": int(_get(row_d, "fn")) if not pd.isna(_get(row_d, "fn")) else float("nan"),
+                "N": int(_get(row_d, "n")) if not pd.isna(_get(row_d, "n")) else float("nan"),
+            }
+        )
     return pd.DataFrame(rows).sort_values("model_name").reset_index(drop=True)
 
 
@@ -147,17 +205,31 @@ def build_regression_metrics_table(
         def _g(col):
             return row_d.get(col, np.nan)
 
-        rows.append({
-            "model_name": r["model_name"],
-            "n_features": _g("n_features"),
-            "RMSE": round(float(_g("rmse")), decimals) if not pd.isna(_g("rmse")) else float("nan"),
-            "RMSE_CI95": format_ci(_g("rmse"), _g("rmse_ci_low"), _g("rmse_ci_high"), decimals),
-            "MAE": round(float(_g("mae")), decimals) if not pd.isna(_g("mae")) else float("nan"),
-            "MAE_CI95": format_ci(_g("mae"), _g("mae_ci_low"), _g("mae_ci_high"), decimals),
-            "R2": round(float(_g("r2")), decimals) if not pd.isna(_g("r2")) else float("nan"),
-            "R2_CI95": format_ci(_g("r2"), _g("r2_ci_low"), _g("r2_ci_high"), decimals),
-            "Spearman_R": round(float(_g("spearman_r")), decimals) if not pd.isna(_g("spearman_r")) else float("nan"),
-            "Spearman_P": round(float(_g("spearman_p")), decimals) if not pd.isna(_g("spearman_p")) else float("nan"),
-            "N": int(_g("n")) if not pd.isna(_g("n")) else float("nan"),
-        })
+        rows.append(
+            {
+                "model_name": r["model_name"],
+                "n_features": _g("n_features"),
+                "RMSE": (
+                    round(float(_g("rmse")), decimals) if not pd.isna(_g("rmse")) else float("nan")
+                ),
+                "RMSE_CI95": format_ci(_g("rmse"), _g("rmse_ci_low"), _g("rmse_ci_high"), decimals),
+                "MAE": (
+                    round(float(_g("mae")), decimals) if not pd.isna(_g("mae")) else float("nan")
+                ),
+                "MAE_CI95": format_ci(_g("mae"), _g("mae_ci_low"), _g("mae_ci_high"), decimals),
+                "R2": round(float(_g("r2")), decimals) if not pd.isna(_g("r2")) else float("nan"),
+                "R2_CI95": format_ci(_g("r2"), _g("r2_ci_low"), _g("r2_ci_high"), decimals),
+                "Spearman_R": (
+                    round(float(_g("spearman_r")), decimals)
+                    if not pd.isna(_g("spearman_r"))
+                    else float("nan")
+                ),
+                "Spearman_P": (
+                    round(float(_g("spearman_p")), decimals)
+                    if not pd.isna(_g("spearman_p"))
+                    else float("nan")
+                ),
+                "N": int(_g("n")) if not pd.isna(_g("n")) else float("nan"),
+            }
+        )
     return pd.DataFrame(rows).sort_values("model_name").reset_index(drop=True)

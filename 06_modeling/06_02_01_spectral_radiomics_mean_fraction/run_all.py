@@ -4,7 +4,7 @@ from run_task import run_task
 
 
 def main(tasks=None):
-    for task in (tasks or list(TASKS.keys())):
+    for task in tasks or list(TASKS.keys()):
         run_task(task=task, run_cfg=RCFG, save_outputs=True)
 
 

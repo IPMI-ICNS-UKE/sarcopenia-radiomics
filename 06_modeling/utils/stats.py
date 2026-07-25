@@ -215,8 +215,14 @@ def bootstrap_classification_metrics(
 
     df_samples = pd.DataFrame(rows)
     metric_cols = [
-        "auc", "balanced_accuracy", "sensitivity", "specificity",
-        "ppv", "npv", "brier", "selected_threshold",
+        "auc",
+        "balanced_accuracy",
+        "sensitivity",
+        "specificity",
+        "ppv",
+        "npv",
+        "brier",
+        "selected_threshold",
     ]
     return BootstrapResult(
         samples=df_samples,
@@ -320,16 +326,18 @@ def calibration_curve_table(
     for i, (label, g) in enumerate(df.groupby("bin", observed=False)):
         if len(g) == 0:
             continue
-        rows.append({
-            "bin_index": int(i),
-            "bin_label": str(label),
-            "n_bin": int(len(g)),
-            "pred_mean": float(np.mean(g["y_proba"])),
-            "pred_min": float(np.min(g["y_proba"])),
-            "pred_max": float(np.max(g["y_proba"])),
-            "obs_rate": float(np.mean(g["y_true"])),
-            "obs_count": int(np.sum(g["y_true"])),
-        })
+        rows.append(
+            {
+                "bin_index": int(i),
+                "bin_label": str(label),
+                "n_bin": int(len(g)),
+                "pred_mean": float(np.mean(g["y_proba"])),
+                "pred_min": float(np.min(g["y_proba"])),
+                "pred_max": float(np.max(g["y_proba"])),
+                "obs_rate": float(np.mean(g["y_true"])),
+                "obs_count": int(np.sum(g["y_true"])),
+            }
+        )
     return pd.DataFrame(rows)
 
 
@@ -350,14 +358,16 @@ def evaluate_calibration(
         y_true = g["target"].to_numpy()
         y_proba = g["pred_proba"].to_numpy()
         cal = calibration_intercept_slope(y_true, y_proba)
-        metric_rows.append({
-            "model_name": model_name,
-            "n": int(len(g)),
-            "n_bins": int(n_bins),
-            "binning_strategy": strategy,
-            "brier": brier_score(y_true, y_proba),
-            **cal,
-        })
+        metric_rows.append(
+            {
+                "model_name": model_name,
+                "n": int(len(g)),
+                "n_bins": int(n_bins),
+                "binning_strategy": strategy,
+                "brier": brier_score(y_true, y_proba),
+                **cal,
+            }
+        )
         curve = calibration_curve_table(y_true, y_proba, n_bins=n_bins, strategy=strategy)
         curve["model_name"] = model_name
         curve_rows.append(curve)
@@ -390,12 +400,14 @@ def bootstrap_calibration(
         for boot_idx in range(n_boot):
             idx = rng.integers(0, n, size=n)
             cal = calibration_intercept_slope(y_true_all[idx], y_proba_all[idx])
-            rows.append({
-                "model_name": model_name,
-                "bootstrap_index": int(boot_idx),
-                "brier": brier_score(y_true_all[idx], y_proba_all[idx]),
-                **cal,
-            })
+            rows.append(
+                {
+                    "model_name": model_name,
+                    "bootstrap_index": int(boot_idx),
+                    "brier": brier_score(y_true_all[idx], y_proba_all[idx]),
+                    **cal,
+                }
+            )
     return pd.DataFrame(rows)
 
 
@@ -457,8 +469,10 @@ def _net_benefit(
         "threshold": float(threshold),
         "net_benefit": float(nb),
         "standardized_net_benefit": float(snb),
-        "tp": float(tp), "fp": float(fp),
-        "n": float(n), "prevalence": prevalence,
+        "tp": float(tp),
+        "fp": float(fp),
+        "n": float(n),
+        "prevalence": prevalence,
     }
 
 
@@ -468,15 +482,22 @@ def _treat_all_nb(y_true: np.ndarray, threshold: float) -> Dict[str, float]:
     odds = threshold / (1.0 - threshold)
     nb = prevalence - (1.0 - prevalence) * odds
     snb = nb / prevalence if prevalence > 0 else np.nan
-    return {"threshold": float(threshold), "net_benefit": float(nb),
-            "standardized_net_benefit": float(snb), "prevalence": prevalence}
+    return {
+        "threshold": float(threshold),
+        "net_benefit": float(nb),
+        "standardized_net_benefit": float(snb),
+        "prevalence": prevalence,
+    }
 
 
 def _treat_none_nb(y_true: np.ndarray, threshold: float) -> Dict[str, float]:
     prevalence = float(np.mean(np.asarray(y_true).astype(int)))
-    return {"threshold": float(threshold), "net_benefit": 0.0,
-            "standardized_net_benefit": 0.0 if prevalence > 0 else np.nan,
-            "prevalence": prevalence}
+    return {
+        "threshold": float(threshold),
+        "net_benefit": 0.0,
+        "standardized_net_benefit": 0.0 if prevalence > 0 else np.nan,
+        "prevalence": prevalence,
+    }
 
 
 def compute_decision_curves(
@@ -523,16 +544,20 @@ def compute_decision_curves(
     for model_name, g in curves.groupby("model_name"):
         if model_name in {"treat_all", "treat_none"}:
             continue
-        summary_rows.append({
-            "model_name": model_name,
-            "n_thresholds": int(len(g)),
-            "threshold_min": float(np.min(g["threshold"])),
-            "threshold_max": float(np.max(g["threshold"])),
-            "net_benefit_mean": safe_nanmean(g["net_benefit"].to_numpy(dtype=float)),
-            "net_benefit_max": float(np.nanmax(g["net_benefit"])),
-            "net_benefit_min": float(np.nanmin(g["net_benefit"])),
-            "standardized_net_benefit_mean": safe_nanmean(g["standardized_net_benefit"].to_numpy(dtype=float)),
-        })
+        summary_rows.append(
+            {
+                "model_name": model_name,
+                "n_thresholds": int(len(g)),
+                "threshold_min": float(np.min(g["threshold"])),
+                "threshold_max": float(np.max(g["threshold"])),
+                "net_benefit_mean": safe_nanmean(g["net_benefit"].to_numpy(dtype=float)),
+                "net_benefit_max": float(np.nanmax(g["net_benefit"])),
+                "net_benefit_min": float(np.nanmin(g["net_benefit"])),
+                "standardized_net_benefit_mean": safe_nanmean(
+                    g["standardized_net_benefit"].to_numpy(dtype=float)
+                ),
+            }
+        )
     summary = pd.DataFrame(summary_rows).sort_values("model_name").reset_index(drop=True)
     return DecisionCurveResult(curves=curves, summary=summary)
 
@@ -565,15 +590,17 @@ def bootstrap_decision_curves(
             idx = rng.integers(0, n, size=n)
             for thr in thresholds:
                 out = _net_benefit(y_true_all[idx], y_proba_all[idx], float(thr))
-                rows.append({
-                    "model_name": model_name,
-                    "bootstrap_index": int(boot_idx),
-                    "threshold": float(thr),
-                    "net_benefit": out["net_benefit"],
-                    "standardized_net_benefit": out["standardized_net_benefit"],
-                    "prevalence": out["prevalence"],
-                    "n": out["n"],
-                })
+                rows.append(
+                    {
+                        "model_name": model_name,
+                        "bootstrap_index": int(boot_idx),
+                        "threshold": float(thr),
+                        "net_benefit": out["net_benefit"],
+                        "standardized_net_benefit": out["standardized_net_benefit"],
+                        "prevalence": out["prevalence"],
+                        "n": out["n"],
+                    }
+                )
     return pd.DataFrame(rows)
 
 
@@ -587,16 +614,18 @@ def summarize_bootstrap_decision_curves(df_boot: pd.DataFrame) -> pd.DataFrame:
     for (model_name, threshold), g in df_boot.groupby(["model_name", "threshold"]):
         nb = g["net_benefit"].to_numpy(dtype=float)
         snb = g["standardized_net_benefit"].to_numpy(dtype=float)
-        rows.append({
-            "model_name": model_name,
-            "threshold": float(threshold),
-            "net_benefit_mean": safe_nanmean(nb),
-            "net_benefit_sd": safe_nanstd(nb),
-            "net_benefit_ci_low": safe_nanpercentile(nb, 2.5),
-            "net_benefit_ci_high": safe_nanpercentile(nb, 97.5),
-            "standardized_net_benefit_mean": safe_nanmean(snb),
-            "standardized_net_benefit_sd": safe_nanstd(snb),
-            "standardized_net_benefit_ci_low": safe_nanpercentile(snb, 2.5),
-            "standardized_net_benefit_ci_high": safe_nanpercentile(snb, 97.5),
-        })
+        rows.append(
+            {
+                "model_name": model_name,
+                "threshold": float(threshold),
+                "net_benefit_mean": safe_nanmean(nb),
+                "net_benefit_sd": safe_nanstd(nb),
+                "net_benefit_ci_low": safe_nanpercentile(nb, 2.5),
+                "net_benefit_ci_high": safe_nanpercentile(nb, 97.5),
+                "standardized_net_benefit_mean": safe_nanmean(snb),
+                "standardized_net_benefit_sd": safe_nanstd(snb),
+                "standardized_net_benefit_ci_low": safe_nanpercentile(snb, 2.5),
+                "standardized_net_benefit_ci_high": safe_nanpercentile(snb, 97.5),
+            }
+        )
     return pd.DataFrame(rows).sort_values(["model_name", "threshold"]).reset_index(drop=True)

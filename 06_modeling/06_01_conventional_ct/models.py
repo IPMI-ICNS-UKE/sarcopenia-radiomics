@@ -32,10 +32,20 @@ def get_model_specs(task: TaskName, run_cfg: RunConfig = RCFG) -> List[ModelSpec
         postfix = ""
 
     return [
-        ModelSpec(f"auto_smi{postfix}",                    "direct",             task_kind, auto_smi,     c),
-        ModelSpec(f"auto_mra{postfix}",                    "direct",             task_kind, auto_mra,     c),
-        ModelSpec(f"auto_smi_mra{postfix}",                "direct",             task_kind, auto_smi_mra, c),
-        ModelSpec(f"auto_smi_score_clinical{postfix}",     "score_plus_clinical",task_kind, auto_smi,     c),
-        ModelSpec(f"auto_mra_score_clinical{postfix}",     "score_plus_clinical",task_kind, auto_mra,     c),
-        ModelSpec(f"auto_smi_mra_score_clinical{postfix}", "score_plus_clinical",task_kind, auto_smi_mra, c),
+        ModelSpec(f"auto_smi{postfix}", "direct", task_kind, auto_smi, c),
+        ModelSpec(f"auto_mra{postfix}", "direct", task_kind, auto_mra, c),
+        ModelSpec(f"auto_smi_mra{postfix}", "direct", task_kind, auto_smi_mra, c),
+        ModelSpec(
+            f"auto_smi_score_clinical{postfix}", "score_plus_clinical", task_kind, auto_smi, c
+        ),
+        ModelSpec(
+            f"auto_mra_score_clinical{postfix}", "score_plus_clinical", task_kind, auto_mra, c
+        ),
+        ModelSpec(
+            f"auto_smi_mra_score_clinical{postfix}",
+            "score_plus_clinical",
+            task_kind,
+            auto_smi_mra,
+            c,
+        ),
     ]

@@ -16,14 +16,10 @@ MAP_NAMES: Tuple[str, ...] = (
     "60kev",
     "80kev",
     "100kev",
-    "120kev"
+    "120kev",
 )
 
-TaskName = Literal[
-    "sarcopenia_composite_cls",
-    "hand_grip_reg",
-    "chair_rise_cls"
-]
+TaskName = Literal["sarcopenia_composite_cls", "hand_grip_reg", "chair_rise_cls"]
 
 
 @dataclass(frozen=True)
@@ -82,8 +78,10 @@ class PathsConfig:
 
     def make_all(self) -> None:
         for d in [
-            self.metrics_dir, self.predictions_dir,
-            self.models_dir / "cls", self.models_dir / "reg",
+            self.metrics_dir,
+            self.predictions_dir,
+            self.models_dir / "cls",
+            self.models_dir / "reg",
             self.tables_dir,
             self.plots_dir / "roc",
             self.plots_dir / "calibration",

@@ -16,14 +16,10 @@ MAP_NAMES: Tuple[str, ...] = (
     "60kev",
     "80kev",
     "100kev",
-    "120kev"
+    "120kev",
 )
 
-TaskName = Literal[
-    "sarcopenia_composite_cls",
-    "hand_grip_reg",
-    "chair_rise_cls"
-]
+TaskName = Literal["sarcopenia_composite_cls", "hand_grip_reg", "chair_rise_cls"]
 
 
 @dataclass(frozen=True)
@@ -45,11 +41,15 @@ class PathsConfig:
         suffix = "_3d" if self.use_3d else ""
         if self.feature_root is None:
             object.__setattr__(
-                self, "feature_root", REPO_ROOT / "output" / f"05_02_spectral_radiomics_signature{suffix}"
+                self,
+                "feature_root",
+                REPO_ROOT / "output" / f"05_02_spectral_radiomics_signature{suffix}",
             )
         if self.output_root is None:
             object.__setattr__(
-                self, "output_root", REPO_ROOT / "output" / f"06_02_02_spectral_radiomics_signature{suffix}"
+                self,
+                "output_root",
+                REPO_ROOT / "output" / f"06_02_02_spectral_radiomics_signature{suffix}",
             )
 
     @property
@@ -78,8 +78,10 @@ class PathsConfig:
 
     def make_all(self) -> None:
         for d in [
-            self.metrics_dir, self.predictions_dir,
-            self.models_dir / "cls", self.models_dir / "reg",
+            self.metrics_dir,
+            self.predictions_dir,
+            self.models_dir / "cls",
+            self.models_dir / "reg",
             self.tables_dir,
             self.plots_dir / "roc",
             self.plots_dir / "calibration",

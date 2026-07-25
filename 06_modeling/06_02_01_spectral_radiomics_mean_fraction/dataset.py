@@ -9,9 +9,16 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "utils"))
 from config import RCFG, RunConfig, TASKS, TaskConfig, TaskName
 
 GT_REQUIRED_COLUMNS = [
-    "Pat ID", "age", "sex", "bmi",
-    "hand_grip", "hand_grip_cont", "chair_rise",
-    "sarcopenia_composite", "test_temporal", "use",
+    "Pat ID",
+    "age",
+    "sex",
+    "bmi",
+    "hand_grip",
+    "hand_grip_cont",
+    "chair_rise",
+    "sarcopenia_composite",
+    "test_temporal",
+    "use",
 ]
 
 COHORT_1 = "cohort1"
@@ -37,7 +44,9 @@ def _apply_filters(df: pd.DataFrame, run_cfg: RunConfig) -> pd.DataFrame:
     return out.reset_index(drop=True)
 
 
-def _standardize_gt(df: pd.DataFrame, cohort_label: str, *, force_split: Optional[str] = None) -> pd.DataFrame:
+def _standardize_gt(
+    df: pd.DataFrame, cohort_label: str, *, force_split: Optional[str] = None
+) -> pd.DataFrame:
     out = df.rename(columns={"Pat ID": "patient_id"}).copy()
     out["patient_id"] = out["patient_id"].astype(str)
     out["cohort"] = cohort_label
@@ -68,7 +77,9 @@ def _read_map_features(run_cfg: RunConfig, cohort_label: str) -> pd.DataFrame:
     for df in dfs[1:]:
         merged = merged.merge(df, on="patient_id", how="inner")
     if merged.empty:
-        raise ValueError(f"Mean-fraction feature table is empty after joining all maps for {cohort_label}.")
+        raise ValueError(
+            f"Mean-fraction feature table is empty after joining all maps for {cohort_label}."
+        )
     return merged
 
 
@@ -79,7 +90,9 @@ def _build_dataset(
     run_cfg: RunConfig,
     force_split: Optional[str] = None,
 ) -> pd.DataFrame:
-    gt_path = run_cfg.paths.gt_table if cohort_label == COHORT_1 else run_cfg.paths.gt_table_cohort_2
+    gt_path = (
+        run_cfg.paths.gt_table if cohort_label == COHORT_1 else run_cfg.paths.gt_table_cohort_2
+    )
     df_gt = _read_gt(gt_path)
     df_gt = _apply_filters(df_gt, run_cfg)
     df_gt = _standardize_gt(df_gt, cohort_label, force_split=force_split)
@@ -91,8 +104,10 @@ def _build_dataset(
     df = df_gt.merge(df_feat, on="patient_id", how="inner")
     if df.empty:
         raise ValueError(f"Merged dataset is empty for {cohort_label}.")
-    print(f"  [{cohort_label}] task={task_cfg.name}  rows={len(df)}  "
-          f"train={int((df['split']=='train').sum())}  test={int((df['split']=='test').sum())}")
+    print(
+        f"  [{cohort_label}] task={task_cfg.name}  rows={len(df)}  "
+        f"train={int((df['split']=='train').sum())}  test={int((df['split']=='test').sum())}"
+    )
     return df
 
 
@@ -100,7 +115,9 @@ def build_dataset(task: TaskName, run_cfg: RunConfig = RCFG, save_csv: bool = Tr
     task_cfg = TASKS[task]
     run_cfg.paths.make_all()
     c1 = _build_dataset(task_cfg=task_cfg, cohort_label=COHORT_1, run_cfg=run_cfg)
-    c2 = _build_dataset(task_cfg=task_cfg, cohort_label=COHORT_2, run_cfg=run_cfg, force_split="test")
+    c2 = _build_dataset(
+        task_cfg=task_cfg, cohort_label=COHORT_2, run_cfg=run_cfg, force_split="test"
+    )
     df = pd.concat([c1, c2], axis=0, ignore_index=True)
     if save_csv:
         path = run_cfg.paths.tables_dir / f"dataset_{task}.csv"

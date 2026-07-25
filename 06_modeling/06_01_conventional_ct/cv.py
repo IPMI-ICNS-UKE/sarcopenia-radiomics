@@ -17,7 +17,11 @@ def run_cv_for_task(
 ) -> Dict:
     """Run full CV pipeline for a conventional-CT task."""
     specs = get_model_specs(task=task, run_cfg=run_cfg)
-    n_rep = run_cfg.debug.n_repeats_outer_override if run_cfg.debug.enabled else run_cfg.cv.n_repeats_outer
+    n_rep = (
+        run_cfg.debug.n_repeats_outer_override
+        if run_cfg.debug.enabled
+        else run_cfg.cv.n_repeats_outer
+    )
 
     return run_cv_for_specs(
         df=df,

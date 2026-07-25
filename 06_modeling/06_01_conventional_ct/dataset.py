@@ -9,11 +9,18 @@ from config import RCFG, RunConfig, TASKS, TaskConfig, TaskName
 
 
 GT_REQUIRED_COLUMNS = [
-    "Pat ID", "age", "sex", "bmi",
-    "hand_grip", "hand_grip_cont", "chair_rise",
+    "Pat ID",
+    "age",
+    "sex",
+    "bmi",
+    "hand_grip",
+    "hand_grip_cont",
+    "chair_rise",
     "sarcopenia_composite",
-    "ct_muscle_mass_2d", "ct_muscle_density_2d",
-    "test_temporal", "use",
+    "ct_muscle_mass_2d",
+    "ct_muscle_density_2d",
+    "test_temporal",
+    "use",
 ]
 
 COHORT_1 = "cohort1"
@@ -55,11 +62,13 @@ def standardize_ground_truth(
     *,
     force_split: Optional[str] = None,
 ) -> pd.DataFrame:
-    out = df.rename(columns={
-        "Pat ID": "patient_id",
-        "ct_muscle_mass_2d": "gt_smi",
-        "ct_muscle_density_2d": "gt_mra",
-    }).copy()
+    out = df.rename(
+        columns={
+            "Pat ID": "patient_id",
+            "ct_muscle_mass_2d": "gt_smi",
+            "ct_muscle_density_2d": "gt_mra",
+        }
+    ).copy()
     out["patient_id"] = out["patient_id"].astype(str)
     out["cohort"] = cohort_label
     if force_split is None:
@@ -78,18 +87,19 @@ def standardize_ground_truth(
 def standardize_signature(df: pd.DataFrame) -> pd.DataFrame:
     # Rename columns to standard names, make sure that smi_2d and smi_3d are renamed to auto_smi,
     # and mra_2d and mra_3d are renamed to auto_mra
-    out = df.rename(columns={
-        "smi_2d": "auto_smi",
-        "mra_2d": "auto_mra",
-        "smi_3d": "auto_smi",
-        "mra_3d": "auto_mra",
-    }).copy()
+    out = df.rename(
+        columns={
+            "smi_2d": "auto_smi",
+            "mra_2d": "auto_mra",
+            "smi_3d": "auto_smi",
+            "mra_3d": "auto_mra",
+        }
+    ).copy()
     out["patient_id"] = out["patient_id"].astype(str)
     dups = out["patient_id"].duplicated(keep=False)
     if dups.any():
         raise ValueError(
-            f"Duplicate patient_id in signature: "
-            f"{sorted(out.loc[dups, 'patient_id'].unique())}"
+            f"Duplicate patient_id in signature: " f"{sorted(out.loc[dups, 'patient_id'].unique())}"
         )
     return out[["patient_id", "auto_smi", "auto_mra"]].copy()
 
@@ -110,12 +120,23 @@ def merge_gt_signature(df_gt: pd.DataFrame, df_sig: pd.DataFrame) -> pd.DataFram
 
 def finalize_table(df: pd.DataFrame) -> pd.DataFrame:
     desired = [
-        "patient_id", "cohort", "split", "task", "target",
-        "age", "sex", "bmi",
-        "gt_smi", "gt_mra",
-        "auto_smi", "auto_mra",
-        "hand_grip", "hand_grip_cont", "chair_rise",
-        "sarcopenia_composite", "test_temporal",
+        "patient_id",
+        "cohort",
+        "split",
+        "task",
+        "target",
+        "age",
+        "sex",
+        "bmi",
+        "gt_smi",
+        "gt_mra",
+        "auto_smi",
+        "auto_mra",
+        "hand_grip",
+        "hand_grip_cont",
+        "chair_rise",
+        "sarcopenia_composite",
+        "test_temporal",
     ]
     existing = [c for c in desired if c in df.columns]
     remaining = [c for c in df.columns if c not in existing]
@@ -203,5 +224,4 @@ def build_all_datasets(
     run_cfg: RunConfig = RCFG,
     save_csv: bool = True,
 ) -> Dict[str, pd.DataFrame]:
-    return {task: build_dataset(task=task, run_cfg=run_cfg, save_csv=save_csv)
-            for task in TASKS}
+    return {task: build_dataset(task=task, run_cfg=run_cfg, save_csv=save_csv) for task in TASKS}

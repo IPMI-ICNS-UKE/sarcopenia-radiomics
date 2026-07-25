@@ -6,11 +6,7 @@ from typing import Dict, Literal, Tuple
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-TaskName = Literal[
-    "sarcopenia_composite_cls",
-    "hand_grip_reg",
-    "chair_rise_cls"
-]
+TaskName = Literal["sarcopenia_composite_cls", "hand_grip_reg", "chair_rise_cls"]
 
 
 MAP_NAMES: Tuple[str, ...] = (
@@ -24,7 +20,7 @@ MAP_NAMES: Tuple[str, ...] = (
     "60kev",
     "80kev",
     "100kev",
-    "120kev"
+    "120kev",
 )
 
 
@@ -46,9 +42,13 @@ class PathsConfig:
     def __post_init__(self) -> None:
         suffix = "_3d" if self.use_3d else ""
         if self.feature_root is None:
-            object.__setattr__(self, "feature_root", REPO_ROOT / "output" / f"05_03_deep_radiomics{suffix}")
+            object.__setattr__(
+                self, "feature_root", REPO_ROOT / "output" / f"05_03_deep_radiomics{suffix}"
+            )
         if self.output_root is None:
-            object.__setattr__(self, "output_root", REPO_ROOT / "output" / f"06_03_deep_radiomics{suffix}")
+            object.__setattr__(
+                self, "output_root", REPO_ROOT / "output" / f"06_03_deep_radiomics{suffix}"
+            )
 
     @property
     def metrics_dir(self) -> Path:
@@ -76,8 +76,10 @@ class PathsConfig:
 
     def make_all(self) -> None:
         for d in [
-            self.metrics_dir, self.predictions_dir,
-            self.models_dir / "cls", self.models_dir / "reg",
+            self.metrics_dir,
+            self.predictions_dir,
+            self.models_dir / "cls",
+            self.models_dir / "reg",
             self.tables_dir,
             self.plots_dir / "roc",
             self.plots_dir / "calibration",
@@ -170,6 +172,7 @@ TASKS: Dict[str, TaskConfig] = {
 @dataclass(frozen=True)
 class ModelBlockConfig:
     """Map name handling and feature column identification for deep radiomics."""
+
     clinical_features: Tuple[str, ...] = ("sex",)
     map_names: Tuple[str, ...] = MAP_NAMES
     ct_map_name: str = "ct"
@@ -184,10 +187,13 @@ class ModelBlockConfig:
     def feature_cols_for_map(self, df_columns, map_name: str) -> Tuple[str, ...]:
         """Return sorted feature columns for a map from a list of column names."""
         tok = self.map_token(map_name)
-        return tuple(sorted(
-            c for c in df_columns
-            if c.startswith(self.feature_prefix) and self.map_token(c.rsplit("_", 1)[-1]) == tok
-        ))
+        return tuple(
+            sorted(
+                c
+                for c in df_columns
+                if c.startswith(self.feature_prefix) and self.map_token(c.rsplit("_", 1)[-1]) == tok
+            )
+        )
 
     def sig_filename(self, map_name: str, cohort_2: bool = False) -> str:
         suffix = "_cohort_2" if cohort_2 else ""

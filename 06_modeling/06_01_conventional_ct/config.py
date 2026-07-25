@@ -5,11 +5,7 @@ from typing import Dict, Literal, Tuple
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-TaskName = Literal[
-    "sarcopenia_composite_cls",
-    "hand_grip_reg",
-    "chair_rise_cls"
-]
+TaskName = Literal["sarcopenia_composite_cls", "hand_grip_reg", "chair_rise_cls"]
 
 
 # Path configuration
@@ -32,10 +28,14 @@ class PathsConfig:
         suffix = "_3d" if self.use_3d else ""
         if self.baseline_signature_dir is None:
             object.__setattr__(
-                self, "baseline_signature_dir", REPO_ROOT / "output" / f"05_01_conventional_ct{suffix}"
+                self,
+                "baseline_signature_dir",
+                REPO_ROOT / "output" / f"05_01_conventional_ct{suffix}",
             )
         if self.output_root is None:
-            object.__setattr__(self, "output_root", REPO_ROOT / "output" / f"06_01_conventional_ct{suffix}")
+            object.__setattr__(
+                self, "output_root", REPO_ROOT / "output" / f"06_01_conventional_ct{suffix}"
+            )
 
     # Derived directories
     @property
@@ -100,7 +100,6 @@ class ElasticNetConfig:
     linear_alphas: Tuple[float, ...] = (1e-2, 1e-1, 1.0, 10.0, 100.0)
     max_iter: int = 20000
     convergence_tol: float = 1e-4
-
 
 
 # Dataset filters
@@ -181,6 +180,7 @@ TASKS: Dict[str, TaskConfig] = {
 @dataclass(frozen=True)
 class ModelBlockConfig:
     """Feature column names for each modelling block."""
+
     clinical_features: Tuple[str, ...] = ("sex",)
     gt_smi_feature: str = "gt_smi"
     gt_mra_feature: str = "gt_mra"
@@ -224,5 +224,6 @@ class RunConfig:
     calibration: CalibrationConfig = field(default_factory=CalibrationConfig)
     decision_curve: DecisionCurveConfig = field(default_factory=DecisionCurveConfig)
     blocks: ModelBlockConfig = field(default_factory=ModelBlockConfig)
+
 
 RCFG = RunConfig()

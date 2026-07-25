@@ -18,7 +18,7 @@ ModelKind = Literal[
     "two_scores_plus_clinical",
 ]
 
-ScoreGroup = Tuple[str, Tuple[str, ...]]   # (group_name, feature_columns)
+ScoreGroup = Tuple[str, Tuple[str, ...]]  # (group_name, feature_columns)
 
 
 # ModelSpec
@@ -83,24 +83,34 @@ def resolve_model_specs(
                 if group_name.replace("_3d", "") not in group_lookup:
                     raise ValueError(f"Could not resolve feature group: {group_name}")
                 groups.append((group_name, group_lookup[group_name.replace("_3d", "")]))
-            resolved.append(ModelSpec(
-                name=spec.name, kind=spec.kind, task_kind=spec.task_kind,
-                base_features=tuple(), clinical_features=spec.clinical_features,
-                use_score=spec.use_score, score_groups=tuple(groups),
-            ))
+            resolved.append(
+                ModelSpec(
+                    name=spec.name,
+                    kind=spec.kind,
+                    task_kind=spec.task_kind,
+                    base_features=tuple(),
+                    clinical_features=spec.clinical_features,
+                    use_score=spec.use_score,
+                    score_groups=tuple(groups),
+                )
+            )
             continue
 
-        if (len(spec.base_features) == 1
-                and spec.base_features[0].startswith(_GROUP_SENTINEL)):
-            key = spec.base_features[0][len(_GROUP_SENTINEL):]
+        if len(spec.base_features) == 1 and spec.base_features[0].startswith(_GROUP_SENTINEL):
+            key = spec.base_features[0][len(_GROUP_SENTINEL) :]
             if key.replace("_3d", "") not in group_lookup:
                 raise ValueError(f"Could not resolve feature group: {key}")
-            resolved.append(ModelSpec(
-                name=spec.name, kind=spec.kind, task_kind=spec.task_kind,
-                base_features=group_lookup[key.replace("_3d", "")],
-                clinical_features=spec.clinical_features,
-                use_score=spec.use_score, score_groups=spec.score_groups,
-            ))
+            resolved.append(
+                ModelSpec(
+                    name=spec.name,
+                    kind=spec.kind,
+                    task_kind=spec.task_kind,
+                    base_features=group_lookup[key.replace("_3d", "")],
+                    clinical_features=spec.clinical_features,
+                    use_score=spec.use_score,
+                    score_groups=spec.score_groups,
+                )
+            )
         else:
             resolved.append(spec)
     return resolved
@@ -108,15 +118,25 @@ def resolve_model_specs(
 
 # Pipeline factories
 def _logistic_pipeline(C: float, l1_ratio: float, max_iter: int, tol: float) -> Pipeline:
-    return Pipeline([
-        ("imputer", SimpleImputer(strategy="median")),
-        ("scaler", StandardScaler()),
-        ("model", LogisticRegression(
-            penalty="elasticnet", solver="saga", class_weight="balanced",
-            C=float(C), l1_ratio=float(l1_ratio),
-            max_iter=int(max_iter), tol=float(tol), random_state=42,
-        )),
-    ])
+    return Pipeline(
+        [
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+            (
+                "model",
+                LogisticRegression(
+                    penalty="elasticnet",
+                    solver="saga",
+                    class_weight="balanced",
+                    C=float(C),
+                    l1_ratio=float(l1_ratio),
+                    max_iter=int(max_iter),
+                    tol=float(tol),
+                    random_state=42,
+                ),
+            ),
+        ]
+    )
 
 
 def _linear_pipeline(alpha: float, l1_ratio: float, max_iter: int, tol: float) -> Pipeline:
@@ -124,14 +144,19 @@ def _linear_pipeline(alpha: float, l1_ratio: float, max_iter: int, tol: float) -
         model = Ridge(alpha=float(alpha), tol=float(tol), random_state=42)
     else:
         model = ElasticNet(
-            alpha=float(alpha), l1_ratio=float(l1_ratio),
-            max_iter=int(max_iter), tol=float(tol), random_state=42,
+            alpha=float(alpha),
+            l1_ratio=float(l1_ratio),
+            max_iter=int(max_iter),
+            tol=float(tol),
+            random_state=42,
         )
-    return Pipeline([
-        ("imputer", SimpleImputer(strategy="median")),
-        ("scaler", StandardScaler()),
-        ("model", model),
-    ])
+    return Pipeline(
+        [
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+            ("model", model),
+        ]
+    )
 
 
 def build_estimator(
@@ -150,8 +175,9 @@ def build_estimator(
     if task_kind == "regression":
         if alpha is None:
             raise ValueError("alpha must be provided for regression.")
-        return _linear_pipeline(alpha=alpha, l1_ratio=l1_ratio,
-                                 max_iter=max_iter, tol=convergence_tol)
+        return _linear_pipeline(
+            alpha=alpha, l1_ratio=l1_ratio, max_iter=max_iter, tol=convergence_tol
+        )
     raise ValueError(f"Unknown task_kind: {task_kind}")
 
 
@@ -237,10 +263,17 @@ def fit_direct(
     l1_ratio: float = 0.5,
 ) -> Dict:
     X, y = get_X_y(df_train, spec.base_features)
-    est = build_estimator(spec.task_kind, max_iter, convergence_tol, C=C, alpha=alpha, l1_ratio=l1_ratio)
+    est = build_estimator(
+        spec.task_kind, max_iter, convergence_tol, C=C, alpha=alpha, l1_ratio=l1_ratio
+    )
     est.fit(X, y)
-    return {"spec": spec, "estimator": est, "features": spec.base_features,
-            "task_kind": spec.task_kind, "params": {"C": C, "alpha": alpha, "l1_ratio": l1_ratio}}
+    return {
+        "spec": spec,
+        "estimator": est,
+        "features": spec.base_features,
+        "task_kind": spec.task_kind,
+        "params": {"C": C, "alpha": alpha, "l1_ratio": l1_ratio},
+    }
 
 
 def predict_direct(fitted: Dict, df: pd.DataFrame) -> Dict[str, np.ndarray]:
@@ -271,15 +304,27 @@ def fit_score_plus_clinical(
     combined_l1_ratio: float = 0.5,
 ) -> Dict:
     X_score, y = get_X_y(df_train, spec.base_features)
-    score_est = build_estimator(spec.task_kind, max_iter, convergence_tol,
-                                 C=score_C, alpha=score_alpha, l1_ratio=score_l1_ratio)
+    score_est = build_estimator(
+        spec.task_kind,
+        max_iter,
+        convergence_tol,
+        C=score_C,
+        alpha=score_alpha,
+        l1_ratio=score_l1_ratio,
+    )
     score_est.fit(X_score, y)
     train_score = predict_score(score_est, X_score, spec.task_kind)
 
     df_s2 = _add_score_columns(df_train, {"score": train_score})
     X_comb, _ = get_X_y(df_s2, spec.all_features)
-    comb_est = build_estimator(spec.task_kind, max_iter, convergence_tol,
-                                C=combined_C, alpha=combined_alpha, l1_ratio=combined_l1_ratio)
+    comb_est = build_estimator(
+        spec.task_kind,
+        max_iter,
+        convergence_tol,
+        C=combined_C,
+        alpha=combined_alpha,
+        l1_ratio=combined_l1_ratio,
+    )
     comb_est.fit(X_comb, y)
     return {
         "spec": spec,
@@ -289,8 +334,11 @@ def fit_score_plus_clinical(
         "combined_features": spec.all_features,
         "task_kind": spec.task_kind,
         "params": {
-            "score_C": score_C, "score_alpha": score_alpha, "score_l1_ratio": score_l1_ratio,
-            "combined_C": combined_C, "combined_alpha": combined_alpha,
+            "score_C": score_C,
+            "score_alpha": score_alpha,
+            "score_l1_ratio": score_l1_ratio,
+            "combined_C": combined_C,
+            "combined_alpha": combined_alpha,
             "combined_l1_ratio": combined_l1_ratio,
         },
     }
@@ -306,8 +354,10 @@ def predict_score_plus_clinical(fitted: Dict, df: pd.DataFrame) -> Dict[str, np.
     df_s2 = _add_score_columns(df, {"score": score})
     X_comb, _ = get_X_y(df_s2, fitted["combined_features"])
 
-    out: Dict[str, np.ndarray] = {"score": predict_score(comb_est, X_comb, spec.task_kind),
-                                   "stage1_score": score}
+    out: Dict[str, np.ndarray] = {
+        "score": predict_score(comb_est, X_comb, spec.task_kind),
+        "stage1_score": score,
+    }
     if spec.task_kind == "classification":
         out["proba"] = comb_est.predict_proba(X_comb)[:, 1]
         out["pred"] = comb_est.predict(X_comb)
@@ -335,18 +385,28 @@ def fit_multi_score(
     for group_name, feature_cols in spec.score_groups:
         X_group, _ = get_X_y(df_train, feature_cols)
         params = score_params_by_group[group_name]
-        est = build_estimator(spec.task_kind, max_iter, convergence_tol,
-                               C=params.get("C"), alpha=params.get("alpha"),
-                               l1_ratio=params["l1_ratio"])
+        est = build_estimator(
+            spec.task_kind,
+            max_iter,
+            convergence_tol,
+            C=params.get("C"),
+            alpha=params.get("alpha"),
+            l1_ratio=params["l1_ratio"],
+        )
         est.fit(X_group, y)
         group_estimators[group_name] = est
         train_scores[_score_col(group_name)] = predict_score(est, X_group, spec.task_kind)
 
     df_s2 = _add_score_columns(df_train, train_scores)
     X_comb, _ = get_X_y(df_s2, spec.all_features)
-    comb_est = build_estimator(spec.task_kind, max_iter, convergence_tol,
-                                C=combined_C, alpha=combined_alpha,
-                                l1_ratio=combined_l1_ratio)
+    comb_est = build_estimator(
+        spec.task_kind,
+        max_iter,
+        convergence_tol,
+        C=combined_C,
+        alpha=combined_alpha,
+        l1_ratio=combined_l1_ratio,
+    )
     comb_est.fit(X_comb, y)
 
     return {
@@ -358,7 +418,8 @@ def fit_multi_score(
         "task_kind": spec.task_kind,
         "params": {
             "score_params_by_group": score_params_by_group,
-            "combined_C": combined_C, "combined_alpha": combined_alpha,
+            "combined_C": combined_C,
+            "combined_alpha": combined_alpha,
             "combined_l1_ratio": combined_l1_ratio,
         },
     }
@@ -399,23 +460,39 @@ def fit_model(
 ) -> Dict:
     """Dispatch fit to the correct function based on spec.kind."""
     if spec.kind == "direct":
-        return fit_direct(df_train, spec, max_iter, convergence_tol,
-                          C=params.get("C"), alpha=params.get("alpha"),
-                          l1_ratio=params.get("l1_ratio", 0.5))
+        return fit_direct(
+            df_train,
+            spec,
+            max_iter,
+            convergence_tol,
+            C=params.get("C"),
+            alpha=params.get("alpha"),
+            l1_ratio=params.get("l1_ratio", 0.5),
+        )
     if spec.kind == "score_plus_clinical":
-        return fit_score_plus_clinical(df_train, spec, max_iter, convergence_tol,
-                                       score_C=params.get("score_C"),
-                                       score_alpha=params.get("score_alpha"),
-                                       score_l1_ratio=params.get("score_l1_ratio", 0.5),
-                                       combined_C=params.get("combined_C"),
-                                       combined_alpha=params.get("combined_alpha"),
-                                       combined_l1_ratio=params.get("combined_l1_ratio", 0.5))
+        return fit_score_plus_clinical(
+            df_train,
+            spec,
+            max_iter,
+            convergence_tol,
+            score_C=params.get("score_C"),
+            score_alpha=params.get("score_alpha"),
+            score_l1_ratio=params.get("score_l1_ratio", 0.5),
+            combined_C=params.get("combined_C"),
+            combined_alpha=params.get("combined_alpha"),
+            combined_l1_ratio=params.get("combined_l1_ratio", 0.5),
+        )
     if spec.kind in ("multi_score", "multi_score_plus_clinical"):
-        return fit_multi_score(df_train, spec, max_iter, convergence_tol,
-                               score_params_by_group=params["score_params_by_group"],
-                               combined_C=params.get("combined_C"),
-                               combined_alpha=params.get("combined_alpha"),
-                               combined_l1_ratio=params.get("combined_l1_ratio", 0.5))
+        return fit_multi_score(
+            df_train,
+            spec,
+            max_iter,
+            convergence_tol,
+            score_params_by_group=params["score_params_by_group"],
+            combined_C=params.get("combined_C"),
+            combined_alpha=params.get("combined_alpha"),
+            combined_l1_ratio=params.get("combined_l1_ratio", 0.5),
+        )
     raise ValueError(f"Unknown model kind: {spec.kind}")
 
 
@@ -431,13 +508,13 @@ def predict_model(fitted: Dict, df: pd.DataFrame) -> Dict[str, np.ndarray]:
     if spec.kind == "two_scores_plus_clinical":
         # imported at call time to avoid forward reference at module level
         from models_base import predict_two_scores_plus_clinical
+
         return predict_two_scores_plus_clinical(fitted, df)
     raise ValueError(f"Unknown model kind: {spec.kind}")
 
 
-# ---------------------------------------------------------------------------
 # Coefficient extraction
-# ---------------------------------------------------------------------------
+
 
 def extract_coefficients(estimator: Pipeline, feature_names: Sequence[str]) -> pd.DataFrame:
     model = estimator.named_steps["model"]
@@ -447,8 +524,9 @@ def extract_coefficients(estimator: Pipeline, feature_names: Sequence[str]) -> p
     if len(coef) != len(feature_names):
         raise ValueError(f"Coefficient length mismatch: {len(coef)} vs {len(feature_names)}")
     intercept = float(np.asarray(getattr(model, "intercept_", [np.nan])).reshape(-1)[0])
-    return pd.DataFrame({"feature": list(feature_names), "coefficient": coef.astype(float),
-                         "intercept": intercept})
+    return pd.DataFrame(
+        {"feature": list(feature_names), "coefficient": coef.astype(float), "intercept": intercept}
+    )
 
 
 def extract_coefficients_from_fitted(fitted: Dict) -> pd.DataFrame:
@@ -499,6 +577,7 @@ def extract_coefficients_from_fitted(fitted: Dict) -> pd.DataFrame:
 # because it has dedicated named fields (ct_score_features, mf_score_features)
 # and corresponding named output keys that external code depends on.
 
+
 def fit_two_scores_plus_clinical(
     df_train: pd.DataFrame,
     spec: ModelSpec,
@@ -523,8 +602,14 @@ def fit_two_scores_plus_clinical(
 
     # Stage 1a: CT estimator
     X_ct, _ = get_X_y(df_train, spec.base_features)
-    ct_est = build_estimator(spec.task_kind, max_iter, convergence_tol,
-                              C=ct_score_C, alpha=ct_score_alpha, l1_ratio=ct_score_l1_ratio)
+    ct_est = build_estimator(
+        spec.task_kind,
+        max_iter,
+        convergence_tol,
+        C=ct_score_C,
+        alpha=ct_score_alpha,
+        l1_ratio=ct_score_l1_ratio,
+    )
     ct_est.fit(X_ct, y)
     score_ct = predict_score(ct_est, X_ct, spec.task_kind)
 
@@ -532,16 +617,28 @@ def fit_two_scores_plus_clinical(
     # aux_features stored in score_groups for compatibility
     mf_features = spec.score_groups[0][1] if spec.score_groups else spec.clinical_features
     X_mf, _ = get_X_y(df_train, mf_features)
-    mf_est = build_estimator(spec.task_kind, max_iter, convergence_tol,
-                              C=mf_score_C, alpha=mf_score_alpha, l1_ratio=mf_score_l1_ratio)
+    mf_est = build_estimator(
+        spec.task_kind,
+        max_iter,
+        convergence_tol,
+        C=mf_score_C,
+        alpha=mf_score_alpha,
+        l1_ratio=mf_score_l1_ratio,
+    )
     mf_est.fit(X_mf, y)
     score_mf = predict_score(mf_est, X_mf, spec.task_kind)
 
     # Stage 2: combined (score_ct, score_musclefat, clinical)
     df_s2 = _add_score_columns(df_train, {"score_ct": score_ct, "score_musclefat": score_mf})
     X_comb, _ = get_X_y(df_s2, spec.all_features)
-    comb_est = build_estimator(spec.task_kind, max_iter, convergence_tol,
-                                C=combined_C, alpha=combined_alpha, l1_ratio=combined_l1_ratio)
+    comb_est = build_estimator(
+        spec.task_kind,
+        max_iter,
+        convergence_tol,
+        C=combined_C,
+        alpha=combined_alpha,
+        l1_ratio=combined_l1_ratio,
+    )
     comb_est.fit(X_comb, y)
 
     return {
@@ -554,11 +651,14 @@ def fit_two_scores_plus_clinical(
         "combined_features": spec.all_features,
         "task_kind": spec.task_kind,
         "params": {
-            "ct_score_C": ct_score_C, "ct_score_alpha": ct_score_alpha,
+            "ct_score_C": ct_score_C,
+            "ct_score_alpha": ct_score_alpha,
             "ct_score_l1_ratio": ct_score_l1_ratio,
-            "mf_score_C": mf_score_C, "mf_score_alpha": mf_score_alpha,
+            "mf_score_C": mf_score_C,
+            "mf_score_alpha": mf_score_alpha,
             "mf_score_l1_ratio": mf_score_l1_ratio,
-            "combined_C": combined_C, "combined_alpha": combined_alpha,
+            "combined_C": combined_C,
+            "combined_alpha": combined_alpha,
             "combined_l1_ratio": combined_l1_ratio,
         },
     }

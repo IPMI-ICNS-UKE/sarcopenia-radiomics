@@ -57,21 +57,35 @@ def get_model_specs(
         else:
             feats = (_GROUP_SENTINEL + map_name,)
 
-        specs.append(ModelSpec(
-            name=f"{map_name}_deep_score_clinical{postfix}",
-            kind="score_plus_clinical", task_kind=tk,
-            base_features=feats, clinical_features=c,
-        ))
+        specs.append(
+            ModelSpec(
+                name=f"{map_name}_deep_score_clinical{postfix}",
+                kind="score_plus_clinical",
+                task_kind=tk,
+                base_features=feats,
+                clinical_features=c,
+            )
+        )
 
     # CT + MuscleFat two-score model
-    ct_feats = group_lookup.get(run_cfg.blocks.ct_map_name, tuple()) if group_lookup else (_GROUP_SENTINEL + run_cfg.blocks.ct_map_name,)
-    mf_feats = group_lookup.get(run_cfg.blocks.musclefat_map_name, tuple()) if group_lookup else tuple()
+    ct_feats = (
+        group_lookup.get(run_cfg.blocks.ct_map_name, tuple())
+        if group_lookup
+        else (_GROUP_SENTINEL + run_cfg.blocks.ct_map_name,)
+    )
+    mf_feats = (
+        group_lookup.get(run_cfg.blocks.musclefat_map_name, tuple()) if group_lookup else tuple()
+    )
     # mf_features stored in score_groups[0][1] for two_scores_plus_clinical
-    specs.append(ModelSpec(
-        name=f"ct_{run_cfg.blocks.musclefat_map_name}_deep_scores_clinical{postfix}",
-        kind="two_scores_plus_clinical", task_kind=tk,
-        base_features=ct_feats, clinical_features=c,
-        score_groups=((run_cfg.blocks.musclefat_map_name, mf_feats),),
-    ))
+    specs.append(
+        ModelSpec(
+            name=f"ct_{run_cfg.blocks.musclefat_map_name}_deep_scores_clinical{postfix}",
+            kind="two_scores_plus_clinical",
+            task_kind=tk,
+            base_features=ct_feats,
+            clinical_features=c,
+            score_groups=((run_cfg.blocks.musclefat_map_name, mf_feats),),
+        )
+    )
 
     return specs

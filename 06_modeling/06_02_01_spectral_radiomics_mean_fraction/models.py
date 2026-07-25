@@ -32,28 +32,44 @@ def get_model_specs(task: TaskName, run_cfg: RunConfig = RCFG) -> List[ModelSpec
     # Per-map: direct and score+clinical
     for map_name in run_cfg.blocks.map_names:
         col = f"mean_fraction_{map_name}"
-        specs.append(ModelSpec(
-            name=f"{map_name}_mean_fraction{postfix}",
-            kind="direct", task_kind=task_kind,
-            base_features=(col,), clinical_features=c,
-        ))
-        specs.append(ModelSpec(
-            name=f"{map_name}_mean_fraction_score_clinical{postfix}",
-            kind="score_plus_clinical", task_kind=task_kind,
-            base_features=(col,), clinical_features=c,
-        ))
+        specs.append(
+            ModelSpec(
+                name=f"{map_name}_mean_fraction{postfix}",
+                kind="direct",
+                task_kind=task_kind,
+                base_features=(col,),
+                clinical_features=c,
+            )
+        )
+        specs.append(
+            ModelSpec(
+                name=f"{map_name}_mean_fraction_score_clinical{postfix}",
+                kind="score_plus_clinical",
+                task_kind=task_kind,
+                base_features=(col,),
+                clinical_features=c,
+            )
+        )
 
     # All maps combined: direct and score+clinical
     all_cols = tuple(f"mean_fraction_{m}" for m in run_cfg.blocks.map_names)
-    specs.append(ModelSpec(
-        name=f"all_maps_mean_fraction{postfix}",
-        kind="direct", task_kind=task_kind,
-        base_features=all_cols, clinical_features=c,
-    ))
-    specs.append(ModelSpec(
-        name=f"all_maps_mean_fraction_score_clinical{postfix}",
-        kind="score_plus_clinical", task_kind=task_kind,
-        base_features=all_cols, clinical_features=c,
-    ))
+    specs.append(
+        ModelSpec(
+            name=f"all_maps_mean_fraction{postfix}",
+            kind="direct",
+            task_kind=task_kind,
+            base_features=all_cols,
+            clinical_features=c,
+        )
+    )
+    specs.append(
+        ModelSpec(
+            name=f"all_maps_mean_fraction_score_clinical{postfix}",
+            kind="score_plus_clinical",
+            task_kind=task_kind,
+            base_features=all_cols,
+            clinical_features=c,
+        )
+    )
 
     return specs

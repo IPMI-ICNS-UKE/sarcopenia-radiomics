@@ -60,27 +60,35 @@ def _evaluate_predictions(
             m["n_features"] = n_features_by_model.get(mn, 1)
             rows.append({"model_name": mn, **m})
         point = pd.DataFrame(rows)
-        boot = bootstrap_classification_metrics(df_pred, n_boot=n_boot,
-                                                threshold=run_cfg.cv.classification_threshold,
-                                                random_state=run_cfg.cv.random_state)
+        boot = bootstrap_classification_metrics(
+            df_pred,
+            n_boot=n_boot,
+            threshold=run_cfg.cv.classification_threshold,
+            random_state=run_cfg.cv.random_state,
+        )
         outputs["test_metrics"] = point.merge(boot.summary, on="model_name", how="left")
         outputs["test_bootstrap_samples"] = boot.samples
         outputs["test_bootstrap_summary"] = boot.summary
 
-        cal = evaluate_calibration(df_pred, n_bins=run_cfg.calibration.n_bins,
-                                    strategy=run_cfg.calibration.strategy)
-        cal_boot_raw = bootstrap_calibration(df_pred, n_boot=n_boot,
-                                              random_state=run_cfg.cv.random_state)
+        cal = evaluate_calibration(
+            df_pred, n_bins=run_cfg.calibration.n_bins, strategy=run_cfg.calibration.strategy
+        )
+        cal_boot_raw = bootstrap_calibration(
+            df_pred, n_boot=n_boot, random_state=run_cfg.cv.random_state
+        )
         outputs["test_calibration_metrics"] = cal.metrics
         outputs["test_calibration_curve"] = cal.curve
         outputs["test_calibration_bootstrap"] = summarize_calibration_bootstrap(cal_boot_raw)
 
-        thr_grid = make_threshold_grid(run_cfg.decision_curve.threshold_start,
-                                        run_cfg.decision_curve.threshold_stop,
-                                        run_cfg.decision_curve.threshold_step)
+        thr_grid = make_threshold_grid(
+            run_cfg.decision_curve.threshold_start,
+            run_cfg.decision_curve.threshold_stop,
+            run_cfg.decision_curve.threshold_step,
+        )
         dca = compute_decision_curves(df_pred, thresholds=thr_grid)
-        dca_boot_raw = bootstrap_decision_curves(df_pred, thresholds=thr_grid, n_boot=n_boot,
-                                                   random_state=run_cfg.cv.random_state)
+        dca_boot_raw = bootstrap_decision_curves(
+            df_pred, thresholds=thr_grid, n_boot=n_boot, random_state=run_cfg.cv.random_state
+        )
         outputs["test_decision_curve"] = dca.curves
         outputs["test_decision_curve_summary"] = dca.summary
         outputs["test_decision_curve_bootstrap"] = summarize_bootstrap_decision_curves(dca_boot_raw)
@@ -92,9 +100,12 @@ def _evaluate_predictions(
             m["n_features"] = p
             rows.append({"model_name": mn, **m})
         point = pd.DataFrame(rows)
-        boot = bootstrap_regression_metrics(df_pred, n_boot=n_boot,
-                                             n_features_by_model=n_features_by_model,
-                                             random_state=run_cfg.cv.random_state)
+        boot = bootstrap_regression_metrics(
+            df_pred,
+            n_boot=n_boot,
+            n_features_by_model=n_features_by_model,
+            random_state=run_cfg.cv.random_state,
+        )
         outputs["test_metrics"] = point.merge(boot.summary, on="model_name", how="left")
         outputs["test_bootstrap_samples"] = boot.samples
         outputs["test_bootstrap_summary"] = boot.summary
@@ -113,15 +124,27 @@ def _save_outputs(outputs, *, task, task_kind, postfix, run_cfg):
         save_df(pred, paths.predictions_dir / f"test_{kind_tag}_predictions{suffix}.csv", dec)
     metrics = outputs.get("test_metrics", pd.DataFrame())
     if not metrics.empty:
-        builder = build_classification_metrics_table if task_kind == "classification" else build_regression_metrics_table
-        save_excel(builder(metrics, decimals=dec),
-                   paths.metrics_dir / f"test_{kind_tag}_metrics{suffix}.xlsx",
-                   sheet_name=f"{kind_tag}_metrics", decimals=dec)
-    for key in ["test_bootstrap_samples", "test_bootstrap_summary",
-                "test_calibration_metrics", "test_calibration_curve",
-                "test_calibration_bootstrap",
-                "test_decision_curve", "test_decision_curve_summary",
-                "test_decision_curve_bootstrap"]:
+        builder = (
+            build_classification_metrics_table
+            if task_kind == "classification"
+            else build_regression_metrics_table
+        )
+        save_excel(
+            builder(metrics, decimals=dec),
+            paths.metrics_dir / f"test_{kind_tag}_metrics{suffix}.xlsx",
+            sheet_name=f"{kind_tag}_metrics",
+            decimals=dec,
+        )
+    for key in [
+        "test_bootstrap_samples",
+        "test_bootstrap_summary",
+        "test_calibration_metrics",
+        "test_calibration_curve",
+        "test_calibration_bootstrap",
+        "test_decision_curve",
+        "test_decision_curve_summary",
+        "test_decision_curve_bootstrap",
+    ]:
         df = outputs.get(key, pd.DataFrame())
         if isinstance(df, pd.DataFrame) and not df.empty:
             save_df(df, paths.tables_dir / f"{key}{suffix}.csv", dec)
@@ -133,7 +156,9 @@ def _save_oof_outputs(outputs, *, task, task_kind, run_cfg, n_boot, all_specs):
     kind_tag = "cls" if task_kind == "classification" else "reg"
     oof_agg = outputs.get("oof_predictions_aggregated", pd.DataFrame())
     if not oof_agg.empty:
-        save_df(oof_agg, paths.predictions_dir / f"train_oof_{kind_tag}_predictions_{task}.csv", dec)
+        save_df(
+            oof_agg, paths.predictions_dir / f"train_oof_{kind_tag}_predictions_{task}.csv", dec
+        )
     for key in ["cv_fold_metrics", "cv_summary", "coefficients", "model_info", "errors"]:
         df = outputs.get(key, pd.DataFrame())
         if isinstance(df, pd.DataFrame) and not df.empty:
@@ -143,14 +168,21 @@ def _save_oof_outputs(outputs, *, task, task_kind, run_cfg, n_boot, all_specs):
         if task_kind == "classification":
             rows = []
             for mn, g in oof_agg.groupby("model_name"):
-                thr = float(g["selected_threshold"].dropna().iloc[0]) if "selected_threshold" in g.columns and g["selected_threshold"].notna().any() else run_cfg.cv.classification_threshold
+                thr = (
+                    float(g["selected_threshold"].dropna().iloc[0])
+                    if "selected_threshold" in g.columns and g["selected_threshold"].notna().any()
+                    else run_cfg.cv.classification_threshold
+                )
                 m = classification_metrics(g["target"].to_numpy(), g["pred_proba"].to_numpy(), thr)
                 m["n_features"] = n_feat.get(mn, 1)
                 rows.append({"model_name": mn, **m})
             pt = pd.DataFrame(rows)
-            boot = bootstrap_classification_metrics(oof_agg, n_boot=n_boot,
-                                                    threshold=run_cfg.cv.classification_threshold,
-                                                    random_state=run_cfg.cv.random_state)
+            boot = bootstrap_classification_metrics(
+                oof_agg,
+                n_boot=n_boot,
+                threshold=run_cfg.cv.classification_threshold,
+                random_state=run_cfg.cv.random_state,
+            )
             merged = pt.merge(boot.summary, on="model_name", how="left")
             pub = build_classification_metrics_table(merged, decimals=dec)
         else:
@@ -161,12 +193,20 @@ def _save_oof_outputs(outputs, *, task, task_kind, run_cfg, n_boot, all_specs):
                 m["n_features"] = p
                 rows.append({"model_name": mn, **m})
             pt = pd.DataFrame(rows)
-            boot = bootstrap_regression_metrics(oof_agg, n_boot=n_boot, n_features_by_model=n_feat,
-                                                 random_state=run_cfg.cv.random_state)
+            boot = bootstrap_regression_metrics(
+                oof_agg,
+                n_boot=n_boot,
+                n_features_by_model=n_feat,
+                random_state=run_cfg.cv.random_state,
+            )
             merged = pt.merge(boot.summary, on="model_name", how="left")
             pub = build_regression_metrics_table(merged, decimals=dec)
-        save_excel(pub, paths.metrics_dir / f"train_oof_{kind_tag}_metrics_{task}.xlsx",
-                   sheet_name=f"oof_{kind_tag}_metrics", decimals=dec)
+        save_excel(
+            pub,
+            paths.metrics_dir / f"train_oof_{kind_tag}_metrics_{task}.xlsx",
+            sheet_name=f"oof_{kind_tag}_metrics",
+            decimals=dec,
+        )
 
 
 # Main runner
@@ -189,7 +229,11 @@ def run_task(
     print(f"Running 06_03_deep_radiomics — task: {task}")
 
     df = build_dataset(task=task, run_cfg=run_cfg, save_csv=True)
-    n_rep = run_cfg.debug.n_repeats_outer_override if run_cfg.debug.enabled else run_cfg.cv.n_repeats_outer
+    n_rep = (
+        run_cfg.debug.n_repeats_outer_override
+        if run_cfg.debug.enabled
+        else run_cfg.cv.n_repeats_outer
+    )
 
     # Cohort-1 for training/test
     df_c1 = df[df["cohort"] == COHORT_1].reset_index(drop=True)
@@ -201,25 +245,33 @@ def run_task(
     n_features_by_model = {s.name: s.n_features for s in specs}
 
     outputs = run_cv_for_specs(
-        df=df_c1, specs=specs,
-        train_split_value="train", test_split_value="test",
-        n_splits_outer=run_cfg.cv.n_splits_outer, n_repeats_outer=n_rep,
-        n_splits_inner=run_cfg.cv.n_splits_inner, random_state=run_cfg.cv.random_state,
-        l1_ratios=run_cfg.enet.l1_ratios, logistic_cs=run_cfg.enet.logistic_cs,
+        df=df_c1,
+        specs=specs,
+        train_split_value="train",
+        test_split_value="test",
+        n_splits_outer=run_cfg.cv.n_splits_outer,
+        n_repeats_outer=n_rep,
+        n_splits_inner=run_cfg.cv.n_splits_inner,
+        random_state=run_cfg.cv.random_state,
+        l1_ratios=run_cfg.enet.l1_ratios,
+        logistic_cs=run_cfg.enet.logistic_cs,
         linear_alphas=run_cfg.enet.linear_alphas,
-        max_iter=run_cfg.enet.max_iter, convergence_tol=run_cfg.enet.convergence_tol,
+        max_iter=run_cfg.enet.max_iter,
+        convergence_tol=run_cfg.enet.convergence_tol,
         default_cls_threshold=run_cfg.cv.classification_threshold,
     )
 
     if save_outputs:
-        _save_oof_outputs(outputs, task=task, task_kind=task_kind,
-                          run_cfg=run_cfg, n_boot=n_boot, all_specs=specs)
+        _save_oof_outputs(
+            outputs, task=task, task_kind=task_kind, run_cfg=run_cfg, n_boot=n_boot, all_specs=specs
+        )
 
     # Cohort-1 test evaluation
     test_pred = outputs.get("test_predictions", pd.DataFrame())
     if not test_pred.empty:
-        test_eval = _evaluate_predictions(test_pred.copy(), task_kind,
-                                           n_features_by_model, run_cfg, n_boot)
+        test_eval = _evaluate_predictions(
+            test_pred.copy(), task_kind, n_features_by_model, run_cfg, n_boot
+        )
         outputs.update(test_eval)
         if save_outputs:
             _save_outputs(outputs, task=task, task_kind=task_kind, postfix="", run_cfg=run_cfg)
@@ -233,16 +285,23 @@ def run_task(
                     calibration_curve=test_eval.get("test_calibration_curve", pd.DataFrame()),
                     decision_curve=test_eval.get("test_decision_curve", pd.DataFrame()),
                     coefficients=coefficients,
-                    plots_dir=run_cfg.paths.plots_dir, task_name=task, key_models=None,
-                    interactive_plots_dir=run_cfg.paths.interactive_plots_dir
-                    if run_cfg.output.save_interactive_plots else None,
+                    plots_dir=run_cfg.paths.plots_dir,
+                    task_name=task,
+                    key_models=None,
+                    interactive_plots_dir=(
+                        run_cfg.paths.interactive_plots_dir
+                        if run_cfg.output.save_interactive_plots
+                        else None
+                    ),
                     dca_xlim=run_cfg.decision_curve.plot_xlim,
                 )
             else:
                 generate_regression_plots(
                     test_predictions=test_eval["test_predictions"],
                     coefficients=coefficients,
-                    plots_dir=run_cfg.paths.plots_dir, task_name=task, key_models=None,
+                    plots_dir=run_cfg.paths.plots_dir,
+                    task_name=task,
+                    key_models=None,
                 )
 
     # Cohort-2 evaluation
@@ -256,19 +315,25 @@ def run_task(
                 continue
             try:
                 pred = predict_model(fitted, df_c2)
-                thr = (fitted.get("selected_threshold", run_cfg.cv.classification_threshold)
-                       if task_kind == "classification" else np.nan)
+                thr = (
+                    fitted.get("selected_threshold", run_cfg.cv.classification_threshold)
+                    if task_kind == "classification"
+                    else np.nan
+                )
                 pred_tables.append(_build_pred_df(spec, df_c2, pred, thr))
             except Exception as exc:
                 print(f"  Warning: cohort-2 prediction failed for {spec.name}: {exc}")
 
         if pred_tables:
             c2_pred = pd.concat(pred_tables, axis=0, ignore_index=True)
-            c2_eval = _evaluate_predictions(c2_pred, task_kind, n_features_by_model, run_cfg, n_boot)
+            c2_eval = _evaluate_predictions(
+                c2_pred, task_kind, n_features_by_model, run_cfg, n_boot
+            )
             outputs["cohort_2"] = c2_eval
             if save_outputs:
-                _save_outputs(c2_eval, task=task, task_kind=task_kind,
-                              postfix="_cohort_2", run_cfg=run_cfg)
+                _save_outputs(
+                    c2_eval, task=task, task_kind=task_kind, postfix="_cohort_2", run_cfg=run_cfg
+                )
                 if task_kind == "classification":
                     generate_classification_plots(
                         test_predictions=c2_pred,
@@ -276,9 +341,13 @@ def run_task(
                         decision_curve=c2_eval.get("test_decision_curve", pd.DataFrame()),
                         coefficients=outputs.get("coefficients", pd.DataFrame()),
                         plots_dir=run_cfg.paths.plots_dir,
-                        task_name=f"{task}_cohort_2", key_models=None,
-                        interactive_plots_dir=run_cfg.paths.interactive_plots_dir
-                        if run_cfg.output.save_interactive_plots else None,
+                        task_name=f"{task}_cohort_2",
+                        key_models=None,
+                        interactive_plots_dir=(
+                            run_cfg.paths.interactive_plots_dir
+                            if run_cfg.output.save_interactive_plots
+                            else None
+                        ),
                         dca_xlim=run_cfg.decision_curve.plot_xlim,
                     )
                 else:
@@ -286,7 +355,8 @@ def run_task(
                         test_predictions=c2_pred,
                         coefficients=outputs.get("coefficients", pd.DataFrame()),
                         plots_dir=run_cfg.paths.plots_dir,
-                        task_name=f"{task}_cohort_2", key_models=None,
+                        task_name=f"{task}_cohort_2",
+                        key_models=None,
                     )
 
     print(f"  Finished task: {task}")

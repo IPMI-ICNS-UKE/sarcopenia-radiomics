@@ -25,7 +25,9 @@ from stats import classification_metrics, compute_youden_threshold, regression_m
 # Splitter factories
 def make_outer_splitter(task_kind: str, n_splits: int, n_repeats: int, random_state: int):
     if task_kind == "classification":
-        return RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=random_state)
+        return RepeatedStratifiedKFold(
+            n_splits=n_splits, n_repeats=n_repeats, random_state=random_state
+        )
     return RepeatedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=random_state)
 
 
@@ -44,8 +46,9 @@ class InnerSelectionResult:
 
 
 # Threshold helpers
-def _train_threshold(spec: ModelSpec, df_train: pd.DataFrame, pred_train: Dict,
-                     fallback: float) -> float:
+def _train_threshold(
+    spec: ModelSpec, df_train: pd.DataFrame, pred_train: Dict, fallback: float
+) -> float:
     if spec.task_kind != "classification":
         return np.nan
     return compute_youden_threshold(
@@ -65,12 +68,20 @@ def _inner_fold_score(
     convergence_tol: float,
     default_cls_threshold: float,
 ) -> float:
-    fitted = fit_direct(df_tr, spec, max_iter, convergence_tol,
-                        C=params.get("C"), alpha=params.get("alpha"),
-                        l1_ratio=params["l1_ratio"])
+    fitted = fit_direct(
+        df_tr,
+        spec,
+        max_iter,
+        convergence_tol,
+        C=params.get("C"),
+        alpha=params.get("alpha"),
+        l1_ratio=params["l1_ratio"],
+    )
     pred = predict_direct(fitted, df_val)
     if spec.task_kind == "classification":
-        m = classification_metrics(df_val["target"].to_numpy(), pred["proba"], default_cls_threshold)
+        m = classification_metrics(
+            df_val["target"].to_numpy(), pred["proba"], default_cls_threshold
+        )
         return m["auc"]
     m = regression_metrics(df_val["target"].to_numpy(), pred["pred"], len(spec.base_features))
     return m["rmse"]
@@ -114,7 +125,10 @@ def select_best_direct_params(
                 spec,
                 df_outer_train.iloc[tr_idx].reset_index(drop=True),
                 df_outer_train.iloc[val_idx].reset_index(drop=True),
-                params, max_iter, convergence_tol, default_cls_threshold,
+                params,
+                max_iter,
+                convergence_tol,
+                default_cls_threshold,
             )
             fold_scores.append(score)
         mean_score = float(np.nanmean(fold_scores)) if fold_scores else np.nan
@@ -131,7 +145,9 @@ def select_best_direct_params(
         .sort_values(f"mean_inner_{metric}", ascending=(spec.task_kind == "regression"))
         .reset_index(drop=True)
     )
-    return InnerSelectionResult(best_params=best_params, best_score=float(best_score), all_results=all_results)
+    return InnerSelectionResult(
+        best_params=best_params, best_score=float(best_score), all_results=all_results
+    )
 
 
 # Parameter selection — score+clinical (two-stage)
@@ -145,7 +161,8 @@ def _oof_scores_for_stage2(
 ) -> pd.DataFrame:
     """Generate OOF scores for stage-2 without leakage."""
     score_spec = ModelSpec(
-        name=f"{spec.name}__stage1", kind="direct",
+        name=f"{spec.name}__stage1",
+        kind="direct",
         task_kind=spec.task_kind,
         base_features=spec.base_features,
         clinical_features=spec.clinical_features,
@@ -157,8 +174,11 @@ def _oof_scores_for_stage2(
     for tr_idx, val_idx in inner_splitter.split(X, y):
         fitted = fit_direct(
             df_outer_train.iloc[tr_idx].reset_index(drop=True),
-            score_spec, max_iter, convergence_tol,
-            C=score_params.get("C"), alpha=score_params.get("alpha"),
+            score_spec,
+            max_iter,
+            convergence_tol,
+            C=score_params.get("C"),
+            alpha=score_params.get("alpha"),
             l1_ratio=score_params["l1_ratio"],
         )
         pred = predict_direct(fitted, df_outer_train.iloc[val_idx].reset_index(drop=True))
@@ -181,15 +201,22 @@ def select_best_score_stage_params(
     default_cls_threshold: float,
 ) -> InnerSelectionResult:
     score_spec = ModelSpec(
-        name=f"{spec.name}__stage1", kind="direct",
+        name=f"{spec.name}__stage1",
+        kind="direct",
         task_kind=spec.task_kind,
         base_features=spec.base_features,
         clinical_features=spec.clinical_features,
     )
     return select_best_direct_params(
-        df_outer_train, score_spec, inner_splitter,
-        l1_ratios, logistic_cs, linear_alphas,
-        max_iter, convergence_tol, default_cls_threshold,
+        df_outer_train,
+        score_spec,
+        inner_splitter,
+        l1_ratios,
+        logistic_cs,
+        linear_alphas,
+        max_iter,
+        convergence_tol,
+        default_cls_threshold,
     )
 
 
@@ -209,15 +236,22 @@ def select_best_combined_stage_params(
         df_outer_train, spec, score_params, inner_splitter, max_iter, convergence_tol
     )
     combined_spec = ModelSpec(
-        name=f"{spec.name}__stage2", kind="direct",
+        name=f"{spec.name}__stage2",
+        kind="direct",
         task_kind=spec.task_kind,
         base_features=("score",) + spec.clinical_features,
         clinical_features=spec.clinical_features,
     )
     return select_best_direct_params(
-        df_s2, combined_spec, inner_splitter,
-        l1_ratios, logistic_cs, linear_alphas,
-        max_iter, convergence_tol, default_cls_threshold,
+        df_s2,
+        combined_spec,
+        inner_splitter,
+        l1_ratios,
+        logistic_cs,
+        linear_alphas,
+        max_iter,
+        convergence_tol,
+        default_cls_threshold,
     )
 
 
@@ -237,15 +271,22 @@ def select_best_multi_score_params(
     group_results: Dict[str, InnerSelectionResult] = {}
     for group_name, feature_cols in spec.score_groups:
         group_spec = ModelSpec(
-            name=f"{spec.name}__{group_name}", kind="direct",
+            name=f"{spec.name}__{group_name}",
+            kind="direct",
             task_kind=spec.task_kind,
             base_features=feature_cols,
             clinical_features=spec.clinical_features,
         )
         group_results[group_name] = select_best_direct_params(
-            df_outer_train, group_spec, inner_splitter,
-            l1_ratios, logistic_cs, linear_alphas,
-            max_iter, convergence_tol, default_cls_threshold,
+            df_outer_train,
+            group_spec,
+            inner_splitter,
+            l1_ratios,
+            logistic_cs,
+            linear_alphas,
+            max_iter,
+            convergence_tol,
+            default_cls_threshold,
         )
 
     # Build OOF scores for combined stage
@@ -257,15 +298,20 @@ def select_best_multi_score_params(
         bp = group_results[group_name].best_params
         for tr_idx, val_idx in inner_splitter.split(X_group, y):
             g_spec = ModelSpec(
-                name=f"{spec.name}__{group_name}", kind="direct",
+                name=f"{spec.name}__{group_name}",
+                kind="direct",
                 task_kind=spec.task_kind,
                 base_features=feature_cols,
                 clinical_features=spec.clinical_features,
             )
             fitted = fit_direct(
                 df_outer_train.iloc[tr_idx].reset_index(drop=True),
-                g_spec, max_iter, convergence_tol,
-                C=bp.get("C"), alpha=bp.get("alpha"), l1_ratio=bp["l1_ratio"],
+                g_spec,
+                max_iter,
+                convergence_tol,
+                C=bp.get("C"),
+                alpha=bp.get("alpha"),
+                l1_ratio=bp["l1_ratio"],
             )
             pred = predict_direct(fitted, df_outer_train.iloc[val_idx].reset_index(drop=True))
             oof_score[val_idx] = pred["score"]
@@ -273,15 +319,22 @@ def select_best_multi_score_params(
 
     df_s2 = _add_score_columns(df_outer_train, oof_scores_map)
     combined_spec = ModelSpec(
-        name=f"{spec.name}__combined", kind="direct",
+        name=f"{spec.name}__combined",
+        kind="direct",
         task_kind=spec.task_kind,
         base_features=spec.all_features,
         clinical_features=spec.clinical_features,
     )
     combined_sel = select_best_direct_params(
-        df_s2, combined_spec, inner_splitter,
-        l1_ratios, logistic_cs, linear_alphas,
-        max_iter, convergence_tol, default_cls_threshold,
+        df_s2,
+        combined_spec,
+        inner_splitter,
+        l1_ratios,
+        logistic_cs,
+        linear_alphas,
+        max_iter,
+        convergence_tol,
+        default_cls_threshold,
     )
     return group_results, combined_sel
 
@@ -331,35 +384,66 @@ def _run_one_fold(
     # ---- hyper-parameter selection ----
     if spec.kind == "direct":
         inner_sel = select_best_direct_params(
-            df_outer_train, spec, inner_splitter,
-            l1_ratios, logistic_cs, linear_alphas,
-            max_iter, convergence_tol, default_cls_threshold,
+            df_outer_train,
+            spec,
+            inner_splitter,
+            l1_ratios,
+            logistic_cs,
+            linear_alphas,
+            max_iter,
+            convergence_tol,
+            default_cls_threshold,
         )
         bp = inner_sel.best_params
-        fitted = fit_direct(df_outer_train, spec, max_iter, convergence_tol,
-                            C=bp.get("C"), alpha=bp.get("alpha"), l1_ratio=bp["l1_ratio"])
+        fitted = fit_direct(
+            df_outer_train,
+            spec,
+            max_iter,
+            convergence_tol,
+            C=bp.get("C"),
+            alpha=bp.get("alpha"),
+            l1_ratio=bp["l1_ratio"],
+        )
         pred_tr = predict_direct(fitted, df_outer_train)
         pred_val = predict_direct(fitted, df_outer_valid)
         thr = _train_threshold(spec, df_outer_train, pred_tr, default_cls_threshold)
         best_params_out = dict(bp)
         tuning_df = inner_sel.all_results.assign(
-            model_name=spec.name, repeat_index=repeat_idx,
-            fold_index=fold_idx, stage="single_stage",
+            model_name=spec.name,
+            repeat_index=repeat_idx,
+            fold_index=fold_idx,
+            stage="single_stage",
         )
 
     elif spec.kind == "score_plus_clinical":
         score_sel = select_best_score_stage_params(
-            df_outer_train, spec, inner_splitter,
-            l1_ratios, logistic_cs, linear_alphas,
-            max_iter, convergence_tol, default_cls_threshold,
+            df_outer_train,
+            spec,
+            inner_splitter,
+            l1_ratios,
+            logistic_cs,
+            linear_alphas,
+            max_iter,
+            convergence_tol,
+            default_cls_threshold,
         )
         comb_sel = select_best_combined_stage_params(
-            df_outer_train, spec, score_sel.best_params, inner_splitter,
-            l1_ratios, logistic_cs, linear_alphas,
-            max_iter, convergence_tol, default_cls_threshold,
+            df_outer_train,
+            spec,
+            score_sel.best_params,
+            inner_splitter,
+            l1_ratios,
+            logistic_cs,
+            linear_alphas,
+            max_iter,
+            convergence_tol,
+            default_cls_threshold,
         )
         fitted = fit_score_plus_clinical(
-            df_outer_train, spec, max_iter, convergence_tol,
+            df_outer_train,
+            spec,
+            max_iter,
+            convergence_tol,
             score_C=score_sel.best_params.get("C"),
             score_alpha=score_sel.best_params.get("alpha"),
             score_l1_ratio=score_sel.best_params["l1_ratio"],
@@ -378,22 +462,43 @@ def _run_one_fold(
             "combined_alpha": comb_sel.best_params.get("alpha", np.nan),
             "combined_l1_ratio": comb_sel.best_params["l1_ratio"],
         }
-        tuning_df = pd.concat([
-            score_sel.all_results.assign(model_name=spec.name, repeat_index=repeat_idx,
-                                         fold_index=fold_idx, stage="score_stage"),
-            comb_sel.all_results.assign(model_name=spec.name, repeat_index=repeat_idx,
-                                         fold_index=fold_idx, stage="combined_stage"),
-        ], axis=0, ignore_index=True)
+        tuning_df = pd.concat(
+            [
+                score_sel.all_results.assign(
+                    model_name=spec.name,
+                    repeat_index=repeat_idx,
+                    fold_index=fold_idx,
+                    stage="score_stage",
+                ),
+                comb_sel.all_results.assign(
+                    model_name=spec.name,
+                    repeat_index=repeat_idx,
+                    fold_index=fold_idx,
+                    stage="combined_stage",
+                ),
+            ],
+            axis=0,
+            ignore_index=True,
+        )
 
     elif spec.kind in ("multi_score", "multi_score_plus_clinical"):
         group_sels, comb_sel = select_best_multi_score_params(
-            df_outer_train, spec, inner_splitter,
-            l1_ratios, logistic_cs, linear_alphas,
-            max_iter, convergence_tol, default_cls_threshold,
+            df_outer_train,
+            spec,
+            inner_splitter,
+            l1_ratios,
+            logistic_cs,
+            linear_alphas,
+            max_iter,
+            convergence_tol,
+            default_cls_threshold,
         )
         score_params_by_group = {g: sel.best_params for g, sel in group_sels.items()}
         fitted = fit_multi_score(
-            df_outer_train, spec, max_iter, convergence_tol,
+            df_outer_train,
+            spec,
+            max_iter,
+            convergence_tol,
             score_params_by_group=score_params_by_group,
             combined_C=comb_sel.best_params.get("C"),
             combined_alpha=comb_sel.best_params.get("alpha"),
@@ -409,25 +514,43 @@ def _run_one_fold(
         }
         tuning_parts = []
         for g_name, g_sel in group_sels.items():
-            tuning_parts.append(g_sel.all_results.assign(
-                model_name=spec.name, repeat_index=repeat_idx,
-                fold_index=fold_idx, stage=f"score_stage__{g_name}",
-            ))
-        tuning_parts.append(comb_sel.all_results.assign(
-            model_name=spec.name, repeat_index=repeat_idx,
-            fold_index=fold_idx, stage="combined_stage",
-        ))
+            tuning_parts.append(
+                g_sel.all_results.assign(
+                    model_name=spec.name,
+                    repeat_index=repeat_idx,
+                    fold_index=fold_idx,
+                    stage=f"score_stage__{g_name}",
+                )
+            )
+        tuning_parts.append(
+            comb_sel.all_results.assign(
+                model_name=spec.name,
+                repeat_index=repeat_idx,
+                fold_index=fold_idx,
+                stage="combined_stage",
+            )
+        )
         tuning_df = pd.concat(tuning_parts, axis=0, ignore_index=True)
 
     elif spec.kind == "two_scores_plus_clinical":
         from models_base import fit_two_scores_plus_clinical, predict_two_scores_plus_clinical
+
         ct_sel, mf_sel, comb_sel = select_best_two_score_params(
-            df_outer_train, spec, inner_splitter,
-            l1_ratios, logistic_cs, linear_alphas,
-            max_iter, convergence_tol, default_cls_threshold,
+            df_outer_train,
+            spec,
+            inner_splitter,
+            l1_ratios,
+            logistic_cs,
+            linear_alphas,
+            max_iter,
+            convergence_tol,
+            default_cls_threshold,
         )
         fitted = fit_two_scores_plus_clinical(
-            df_outer_train, spec, max_iter, convergence_tol,
+            df_outer_train,
+            spec,
+            max_iter,
+            convergence_tol,
             ct_score_C=ct_sel.best_params.get("C"),
             ct_score_alpha=ct_sel.best_params.get("alpha"),
             ct_score_l1_ratio=ct_sel.best_params["l1_ratio"],
@@ -449,14 +572,30 @@ def _run_one_fold(
             "combined_C": comb_sel.best_params.get("C", np.nan),
             "combined_l1_ratio": comb_sel.best_params["l1_ratio"],
         }
-        tuning_df = pd.concat([
-            ct_sel.all_results.assign(model_name=spec.name, repeat_index=repeat_idx,
-                                       fold_index=fold_idx, stage="ct_score_stage"),
-            mf_sel.all_results.assign(model_name=spec.name, repeat_index=repeat_idx,
-                                       fold_index=fold_idx, stage="mf_score_stage"),
-            comb_sel.all_results.assign(model_name=spec.name, repeat_index=repeat_idx,
-                                         fold_index=fold_idx, stage="combined_stage"),
-        ], axis=0, ignore_index=True)
+        tuning_df = pd.concat(
+            [
+                ct_sel.all_results.assign(
+                    model_name=spec.name,
+                    repeat_index=repeat_idx,
+                    fold_index=fold_idx,
+                    stage="ct_score_stage",
+                ),
+                mf_sel.all_results.assign(
+                    model_name=spec.name,
+                    repeat_index=repeat_idx,
+                    fold_index=fold_idx,
+                    stage="mf_score_stage",
+                ),
+                comb_sel.all_results.assign(
+                    model_name=spec.name,
+                    repeat_index=repeat_idx,
+                    fold_index=fold_idx,
+                    stage="combined_stage",
+                ),
+            ],
+            axis=0,
+            ignore_index=True,
+        )
     else:
         raise ValueError(f"Unknown model kind: {spec.kind}")
 
@@ -464,16 +603,27 @@ def _run_one_fold(
     if spec.task_kind == "classification":
         m = classification_metrics(df_outer_valid["target"].to_numpy(), pred_val["proba"], thr)
     else:
-        m = regression_metrics(df_outer_valid["target"].to_numpy(), pred_val["pred"], spec.n_features)
+        m = regression_metrics(
+            df_outer_valid["target"].to_numpy(), pred_val["pred"], spec.n_features
+        )
 
-    pred_df = _build_pred_df(spec, df_outer_valid, pred_val, thr,
-                              extra_cols={"repeat_index": repeat_idx, "fold_index": fold_idx})
+    pred_df = _build_pred_df(
+        spec,
+        df_outer_valid,
+        pred_val,
+        thr,
+        extra_cols={"repeat_index": repeat_idx, "fold_index": fold_idx},
+    )
 
     metric_row = {
-        "model_name": spec.name, "task_kind": spec.task_kind,
-        "repeat_index": repeat_idx, "fold_index": fold_idx,
-        "n_train": len(df_outer_train), "n_valid": len(df_outer_valid),
-        **best_params_out, **m,
+        "model_name": spec.name,
+        "task_kind": spec.task_kind,
+        "repeat_index": repeat_idx,
+        "fold_index": fold_idx,
+        "n_train": len(df_outer_train),
+        "n_valid": len(df_outer_valid),
+        **best_params_out,
+        **m,
     }
     if spec.task_kind == "classification":
         metric_row["selected_threshold"] = thr
@@ -497,11 +647,14 @@ def run_outer_cv_for_model(
     convergence_tol: float,
     default_cls_threshold: float,
 ) -> Dict:
-    outer_splitter = make_outer_splitter(spec.task_kind, n_splits_outer, n_repeats_outer, random_state)
+    outer_splitter = make_outer_splitter(
+        spec.task_kind, n_splits_outer, n_repeats_outer, random_state
+    )
     inner_splitter = make_inner_splitter(spec.task_kind, n_splits_inner, random_state)
 
-    X_ref = df_train.loc[:, list(spec.base_features
-                                  if spec.base_features else spec.clinical_features)].copy()
+    X_ref = df_train.loc[
+        :, list(spec.base_features if spec.base_features else spec.clinical_features)
+    ].copy()
     y_ref = df_train["target"].to_numpy()
 
     metric_rows: List[Dict] = []
@@ -516,10 +669,14 @@ def run_outer_cv_for_model(
             df_outer_valid=df_train.iloc[val_idx].reset_index(drop=True),
             spec=spec,
             inner_splitter=inner_splitter,
-            l1_ratios=l1_ratios, logistic_cs=logistic_cs, linear_alphas=linear_alphas,
-            max_iter=max_iter, convergence_tol=convergence_tol,
+            l1_ratios=l1_ratios,
+            logistic_cs=logistic_cs,
+            linear_alphas=linear_alphas,
+            max_iter=max_iter,
+            convergence_tol=convergence_tol,
             default_cls_threshold=default_cls_threshold,
-            repeat_idx=rep_idx, fold_idx=fold_idx,
+            repeat_idx=rep_idx,
+            fold_idx=fold_idx,
         )
         metric_rows.append(metric_row)
         pred_rows.append(pred_df)
@@ -554,13 +711,26 @@ def refit_and_evaluate_test(
 
     if spec.kind == "direct":
         inner_sel = select_best_direct_params(
-            df_train, spec, inner_splitter,
-            l1_ratios, logistic_cs, linear_alphas,
-            max_iter, convergence_tol, default_cls_threshold,
+            df_train,
+            spec,
+            inner_splitter,
+            l1_ratios,
+            logistic_cs,
+            linear_alphas,
+            max_iter,
+            convergence_tol,
+            default_cls_threshold,
         )
         bp = inner_sel.best_params
-        fitted = fit_direct(df_train, spec, max_iter, convergence_tol,
-                            C=bp.get("C"), alpha=bp.get("alpha"), l1_ratio=bp["l1_ratio"])
+        fitted = fit_direct(
+            df_train,
+            spec,
+            max_iter,
+            convergence_tol,
+            C=bp.get("C"),
+            alpha=bp.get("alpha"),
+            l1_ratio=bp["l1_ratio"],
+        )
         pred_tr = predict_direct(fitted, df_train)
         pred_test = predict_direct(fitted, df_test)
         thr = _train_threshold(spec, df_train, pred_tr, default_cls_threshold)
@@ -569,17 +739,33 @@ def refit_and_evaluate_test(
 
     elif spec.kind == "score_plus_clinical":
         score_sel = select_best_score_stage_params(
-            df_train, spec, inner_splitter,
-            l1_ratios, logistic_cs, linear_alphas,
-            max_iter, convergence_tol, default_cls_threshold,
+            df_train,
+            spec,
+            inner_splitter,
+            l1_ratios,
+            logistic_cs,
+            linear_alphas,
+            max_iter,
+            convergence_tol,
+            default_cls_threshold,
         )
         comb_sel = select_best_combined_stage_params(
-            df_train, spec, score_sel.best_params, inner_splitter,
-            l1_ratios, logistic_cs, linear_alphas,
-            max_iter, convergence_tol, default_cls_threshold,
+            df_train,
+            spec,
+            score_sel.best_params,
+            inner_splitter,
+            l1_ratios,
+            logistic_cs,
+            linear_alphas,
+            max_iter,
+            convergence_tol,
+            default_cls_threshold,
         )
         fitted = fit_score_plus_clinical(
-            df_train, spec, max_iter, convergence_tol,
+            df_train,
+            spec,
+            max_iter,
+            convergence_tol,
             score_C=score_sel.best_params.get("C"),
             score_alpha=score_sel.best_params.get("alpha"),
             score_l1_ratio=score_sel.best_params["l1_ratio"],
@@ -598,20 +784,33 @@ def refit_and_evaluate_test(
             "combined_alpha": comb_sel.best_params.get("alpha", np.nan),
             "combined_l1_ratio": comb_sel.best_params["l1_ratio"],
         }
-        inner_tuning = pd.concat([
-            score_sel.all_results.assign(model_name=spec.name, stage="score_stage"),
-            comb_sel.all_results.assign(model_name=spec.name, stage="combined_stage"),
-        ], axis=0, ignore_index=True)
+        inner_tuning = pd.concat(
+            [
+                score_sel.all_results.assign(model_name=spec.name, stage="score_stage"),
+                comb_sel.all_results.assign(model_name=spec.name, stage="combined_stage"),
+            ],
+            axis=0,
+            ignore_index=True,
+        )
 
     elif spec.kind in ("multi_score", "multi_score_plus_clinical"):
         group_sels, comb_sel = select_best_multi_score_params(
-            df_train, spec, inner_splitter,
-            l1_ratios, logistic_cs, linear_alphas,
-            max_iter, convergence_tol, default_cls_threshold,
+            df_train,
+            spec,
+            inner_splitter,
+            l1_ratios,
+            logistic_cs,
+            linear_alphas,
+            max_iter,
+            convergence_tol,
+            default_cls_threshold,
         )
         score_params_by_group = {g: sel.best_params for g, sel in group_sels.items()}
         fitted = fit_multi_score(
-            df_train, spec, max_iter, convergence_tol,
+            df_train,
+            spec,
+            max_iter,
+            convergence_tol,
             score_params_by_group=score_params_by_group,
             combined_C=comb_sel.best_params.get("C"),
             combined_alpha=comb_sel.best_params.get("alpha"),
@@ -627,19 +826,33 @@ def refit_and_evaluate_test(
         }
         inner_parts = []
         for g_name, g_sel in group_sels.items():
-            inner_parts.append(g_sel.all_results.assign(model_name=spec.name, stage=f"score_stage__{g_name}"))
-        inner_parts.append(comb_sel.all_results.assign(model_name=spec.name, stage="combined_stage"))
+            inner_parts.append(
+                g_sel.all_results.assign(model_name=spec.name, stage=f"score_stage__{g_name}")
+            )
+        inner_parts.append(
+            comb_sel.all_results.assign(model_name=spec.name, stage="combined_stage")
+        )
         inner_tuning = pd.concat(inner_parts, axis=0, ignore_index=True)
 
     elif spec.kind == "two_scores_plus_clinical":
         from models_base import fit_two_scores_plus_clinical, predict_two_scores_plus_clinical
+
         ct_sel, mf_sel, comb_sel = select_best_two_score_params(
-            df_train, spec, inner_splitter,
-            l1_ratios, logistic_cs, linear_alphas,
-            max_iter, convergence_tol, default_cls_threshold,
+            df_train,
+            spec,
+            inner_splitter,
+            l1_ratios,
+            logistic_cs,
+            linear_alphas,
+            max_iter,
+            convergence_tol,
+            default_cls_threshold,
         )
         fitted = fit_two_scores_plus_clinical(
-            df_train, spec, max_iter, convergence_tol,
+            df_train,
+            spec,
+            max_iter,
+            convergence_tol,
             ct_score_C=ct_sel.best_params.get("C"),
             ct_score_alpha=ct_sel.best_params.get("alpha"),
             ct_score_l1_ratio=ct_sel.best_params["l1_ratio"],
@@ -661,11 +874,15 @@ def refit_and_evaluate_test(
             "combined_C": comb_sel.best_params.get("C", np.nan),
             "combined_l1_ratio": comb_sel.best_params["l1_ratio"],
         }
-        inner_tuning = pd.concat([
-            ct_sel.all_results.assign(model_name=spec.name, stage="ct_score_stage"),
-            mf_sel.all_results.assign(model_name=spec.name, stage="mf_score_stage"),
-            comb_sel.all_results.assign(model_name=spec.name, stage="combined_stage"),
-        ], axis=0, ignore_index=True)
+        inner_tuning = pd.concat(
+            [
+                ct_sel.all_results.assign(model_name=spec.name, stage="ct_score_stage"),
+                mf_sel.all_results.assign(model_name=spec.name, stage="mf_score_stage"),
+                comb_sel.all_results.assign(model_name=spec.name, stage="combined_stage"),
+            ],
+            axis=0,
+            ignore_index=True,
+        )
     else:
         raise ValueError(f"Unknown model kind: {spec.kind}")
 
@@ -706,7 +923,16 @@ def summarize_cv_metrics(df_fold: pd.DataFrame, task_kind: str) -> pd.DataFrame:
     if df_fold.empty:
         return pd.DataFrame()
     metric_cols = (
-        ["auc", "balanced_accuracy", "sensitivity", "specificity", "ppv", "npv", "brier", "selected_threshold"]
+        [
+            "auc",
+            "balanced_accuracy",
+            "sensitivity",
+            "specificity",
+            "ppv",
+            "npv",
+            "brier",
+            "selected_threshold",
+        ]
         if task_kind == "classification"
         else ["r2", "adjusted_r2", "mae", "rmse", "spearman_r"]
     )
@@ -795,17 +1021,27 @@ def run_cv_for_specs(
     refit_models: Dict = {}
 
     for spec in tqdm(specs, desc="CV"):
-        model_info_rows.append({
-            "model_name": spec.name, "task_kind": spec.task_kind,
-            "model_kind": spec.kind, "n_features": spec.n_features,
-        })
+        model_info_rows.append(
+            {
+                "model_name": spec.name,
+                "task_kind": spec.task_kind,
+                "model_kind": spec.kind,
+                "n_features": spec.n_features,
+            }
+        )
         try:
             cv_out = run_outer_cv_for_model(
-                df_train, spec,
-                n_splits_outer=n_splits_outer, n_repeats_outer=n_repeats_outer,
-                n_splits_inner=n_splits_inner, random_state=random_state,
-                l1_ratios=l1_ratios, logistic_cs=logistic_cs, linear_alphas=linear_alphas,
-                max_iter=max_iter, convergence_tol=convergence_tol,
+                df_train,
+                spec,
+                n_splits_outer=n_splits_outer,
+                n_repeats_outer=n_repeats_outer,
+                n_splits_inner=n_splits_inner,
+                random_state=random_state,
+                l1_ratios=l1_ratios,
+                logistic_cs=logistic_cs,
+                linear_alphas=linear_alphas,
+                max_iter=max_iter,
+                convergence_tol=convergence_tol,
                 default_cls_threshold=default_cls_threshold,
             )
             cv_metrics.append(cv_out["cv_fold_metrics"])
@@ -813,11 +1049,17 @@ def run_cv_for_specs(
             inner_tunings.append(cv_out["inner_tuning"])
 
             test_out = refit_and_evaluate_test(
-                df, spec,
-                train_split_value=train_split_value, test_split_value=test_split_value,
-                n_splits_inner=n_splits_inner, random_state=random_state,
-                l1_ratios=l1_ratios, logistic_cs=logistic_cs, linear_alphas=linear_alphas,
-                max_iter=max_iter, convergence_tol=convergence_tol,
+                df,
+                spec,
+                train_split_value=train_split_value,
+                test_split_value=test_split_value,
+                n_splits_inner=n_splits_inner,
+                random_state=random_state,
+                l1_ratios=l1_ratios,
+                logistic_cs=logistic_cs,
+                linear_alphas=linear_alphas,
+                max_iter=max_iter,
+                convergence_tol=convergence_tol,
                 default_cls_threshold=default_cls_threshold,
             )
             test_metrics.append(test_out["test_metrics"])
@@ -826,12 +1068,17 @@ def run_cv_for_specs(
             refit_tunings.append(test_out["inner_tuning"])
             refit_models[spec.name] = test_out["fitted"]
         except Exception as exc:
-            error_rows.append({
-                "model_name": spec.name, "task_kind": spec.task_kind,
-                "model_kind": spec.kind, "error": repr(exc),
-            })
+            error_rows.append(
+                {
+                    "model_name": spec.name,
+                    "task_kind": spec.task_kind,
+                    "model_kind": spec.kind,
+                    "error": repr(exc),
+                }
+            )
 
-    def _c(tables): return pd.concat(tables, axis=0, ignore_index=True) if tables else pd.DataFrame()
+    def _c(tables):
+        return pd.concat(tables, axis=0, ignore_index=True) if tables else pd.DataFrame()
 
     task_kind = specs[0].task_kind if specs else "classification"
     cv_fold_metrics = _c(cv_metrics)
@@ -875,17 +1122,43 @@ def select_best_two_score_params(
     # MuscleFat features are stored in score_groups[0][1]
     mf_features = spec.score_groups[0][1] if spec.score_groups else spec.base_features
 
-    ct_spec = _MS(name=f"{spec.name}__ct", kind="direct", task_kind=spec.task_kind,
-                  base_features=spec.base_features, clinical_features=spec.clinical_features)
-    mf_spec = _MS(name=f"{spec.name}__mf", kind="direct", task_kind=spec.task_kind,
-                  base_features=mf_features, clinical_features=spec.clinical_features)
+    ct_spec = _MS(
+        name=f"{spec.name}__ct",
+        kind="direct",
+        task_kind=spec.task_kind,
+        base_features=spec.base_features,
+        clinical_features=spec.clinical_features,
+    )
+    mf_spec = _MS(
+        name=f"{spec.name}__mf",
+        kind="direct",
+        task_kind=spec.task_kind,
+        base_features=mf_features,
+        clinical_features=spec.clinical_features,
+    )
 
-    ct_sel = select_best_direct_params(df_outer_train, ct_spec, inner_splitter,
-                                        l1_ratios, logistic_cs, linear_alphas,
-                                        max_iter, convergence_tol, default_cls_threshold)
-    mf_sel = select_best_direct_params(df_outer_train, mf_spec, inner_splitter,
-                                        l1_ratios, logistic_cs, linear_alphas,
-                                        max_iter, convergence_tol, default_cls_threshold)
+    ct_sel = select_best_direct_params(
+        df_outer_train,
+        ct_spec,
+        inner_splitter,
+        l1_ratios,
+        logistic_cs,
+        linear_alphas,
+        max_iter,
+        convergence_tol,
+        default_cls_threshold,
+    )
+    mf_sel = select_best_direct_params(
+        df_outer_train,
+        mf_spec,
+        inner_splitter,
+        l1_ratios,
+        logistic_cs,
+        linear_alphas,
+        max_iter,
+        convergence_tol,
+        default_cls_threshold,
+    )
 
     # Build OOF scores for combined stage
     y = df_outer_train["target"].to_numpy()
@@ -895,26 +1168,47 @@ def select_best_two_score_params(
     oof_mf = np.full(len(df_outer_train), np.nan, dtype=float)
 
     for tr_idx, val_idx in inner_splitter.split(X_ct, y):
-        fitted_ct = fit_direct(df_outer_train.iloc[tr_idx].reset_index(drop=True),
-                               ct_spec, max_iter, convergence_tol,
-                               C=ct_sel.best_params.get("C"),
-                               alpha=ct_sel.best_params.get("alpha"),
-                               l1_ratio=ct_sel.best_params["l1_ratio"])
+        fitted_ct = fit_direct(
+            df_outer_train.iloc[tr_idx].reset_index(drop=True),
+            ct_spec,
+            max_iter,
+            convergence_tol,
+            C=ct_sel.best_params.get("C"),
+            alpha=ct_sel.best_params.get("alpha"),
+            l1_ratio=ct_sel.best_params["l1_ratio"],
+        )
         pred_ct = predict_direct(fitted_ct, df_outer_train.iloc[val_idx].reset_index(drop=True))
         oof_ct[val_idx] = pred_ct["score"]
 
-        fitted_mf = fit_direct(df_outer_train.iloc[tr_idx].reset_index(drop=True),
-                               mf_spec, max_iter, convergence_tol,
-                               C=mf_sel.best_params.get("C"),
-                               alpha=mf_sel.best_params.get("alpha"),
-                               l1_ratio=mf_sel.best_params["l1_ratio"])
+        fitted_mf = fit_direct(
+            df_outer_train.iloc[tr_idx].reset_index(drop=True),
+            mf_spec,
+            max_iter,
+            convergence_tol,
+            C=mf_sel.best_params.get("C"),
+            alpha=mf_sel.best_params.get("alpha"),
+            l1_ratio=mf_sel.best_params["l1_ratio"],
+        )
         pred_mf = predict_direct(fitted_mf, df_outer_train.iloc[val_idx].reset_index(drop=True))
         oof_mf[val_idx] = pred_mf["score"]
 
     df_s2 = _add_score_columns(df_outer_train, {"score_ct": oof_ct, "score_musclefat": oof_mf})
-    combined_spec = _MS(name=f"{spec.name}__combined", kind="direct", task_kind=spec.task_kind,
-                        base_features=spec.all_features, clinical_features=spec.clinical_features)
-    comb_sel = select_best_direct_params(df_s2, combined_spec, inner_splitter,
-                                          l1_ratios, logistic_cs, linear_alphas,
-                                          max_iter, convergence_tol, default_cls_threshold)
+    combined_spec = _MS(
+        name=f"{spec.name}__combined",
+        kind="direct",
+        task_kind=spec.task_kind,
+        base_features=spec.all_features,
+        clinical_features=spec.clinical_features,
+    )
+    comb_sel = select_best_direct_params(
+        df_s2,
+        combined_spec,
+        inner_splitter,
+        l1_ratios,
+        logistic_cs,
+        linear_alphas,
+        max_iter,
+        convergence_tol,
+        default_cls_threshold,
+    )
     return ct_sel, mf_sel, comb_sel
