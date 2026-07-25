@@ -12,14 +12,12 @@ EXPORT_ROOT = Path(
 
 # Destination root with folders like:
 # Pat9, Pat10, Pat90, ...
-DEST_ROOT = Path(
-    "/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaData/labelsStabilityTest"
-)
+DEST_ROOT = Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaData/labelsStabilityTest")
 
 # Annotator folder mapping
 ANNOTATOR_MAP = {
-    "p100709": "j",   # Jenni
-    "p389615": "i",   # Isabel
+    "p100709": "j",  # Jenni
+    "p389615": "i",  # Isabel
 }
 
 # Relevant structures and their destination filename stems
@@ -106,9 +104,7 @@ def main():
 
         dest_patient_dir = DEST_ROOT / dest_patient_name
         if not dest_patient_dir.exists():
-            skipped.append(
-                f"[SKIP] Destination patient folder does not exist: {dest_patient_dir}"
-            )
+            skipped.append(f"[SKIP] Destination patient folder does not exist: {dest_patient_dir}")
             continue
 
         annotator_dirs = find_annotator_folders(export_patient_dir)

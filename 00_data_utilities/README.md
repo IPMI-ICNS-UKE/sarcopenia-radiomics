@@ -18,6 +18,14 @@ radiomics extraction, or modeling.
 | `00_06_cohort_2_spectral_ct_parameters.py` | Computes 2D/3D muscle area, density (HU), and fat-fraction summary values per Cohort 2 patient for a sanity check against the main pipeline. |
 | `00_07_cohort_2_align_data/` | Rigidly registers Cohort 2 segmentation masks to the HU spectral CT grid when origin/orientation mismatches were detected (`alignment_config.py` for parameters, `run.py` as the entry point). |
 
+## Running
+
+Each script is standalone; run individually from within this folder, e.g.:
+
+```bash
+python 00_01_organize_spectral_ct.py
+```
+
 ## Notes
 
 - Paths at the top of each script (e.g. `IMAGES_ROOT`, `LABELS_ROOT`) point to local

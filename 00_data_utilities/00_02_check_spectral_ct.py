@@ -8,7 +8,9 @@ from openpyxl.utils import get_column_letter
 
 
 IMAGES_ROOT = Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/imagesAll")
-OUTPUT_XLSX = Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/summary/summary_images.xlsx")
+OUTPUT_XLSX = Path(
+    "/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/summary/summary_images.xlsx"
+)
 EXPECTED_PHASES = ["arteriell", "nativ", "spaet", "venous", "non_def"]
 
 
@@ -43,11 +45,13 @@ def collect_summary(images_root: Path):
 
     patient_dirs = sorted(
         [p for p in images_root.iterdir() if p.is_dir() and p.name.startswith("Pat")],
-        key=patient_sort_key
+        key=patient_sort_key,
     )
 
     for patient_dir in patient_dirs:
-        subdirs = sorted([p for p in patient_dir.iterdir() if p.is_dir()], key=lambda p: p.name.lower())
+        subdirs = sorted(
+            [p for p in patient_dir.iterdir() if p.is_dir()], key=lambda p: p.name.lower()
+        )
         found_phase_names = [p.name for p in subdirs]
         expected_present = [p for p in found_phase_names if p in EXPECTED_PHASES]
         unexpected = [p for p in found_phase_names if p not in EXPECTED_PHASES]
@@ -65,22 +69,26 @@ def collect_summary(images_root: Path):
             phase_counts[phase] = count
             total_files += count
 
-            long_rows.append([
-                patient_dir.name,
-                phase,
-                "yes" if present else "no",
-                count,
-                str(phase_folder),
-            ])
+            long_rows.append(
+                [
+                    patient_dir.name,
+                    phase,
+                    "yes" if present else "no",
+                    count,
+                    str(phase_folder),
+                ]
+            )
 
         for folder_name in unexpected:
             folder_path = patient_dir / folder_name
-            unexpected_rows.append([
-                patient_dir.name,
-                folder_name,
-                count_nii_gz_files(folder_path),
-                str(folder_path),
-            ])
+            unexpected_rows.append(
+                [
+                    patient_dir.name,
+                    folder_name,
+                    count_nii_gz_files(folder_path),
+                    str(folder_path),
+                ]
+            )
 
         overview_row = [
             patient_dir.name,
@@ -91,10 +99,12 @@ def collect_summary(images_root: Path):
         ]
 
         for phase in EXPECTED_PHASES:
-            overview_row.extend([
-                "yes" if phase_present[phase] else "no",
-                phase_counts[phase],
-            ])
+            overview_row.extend(
+                [
+                    "yes" if phase_present[phase] else "no",
+                    phase_counts[phase],
+                ]
+            )
 
         overview_rows.append(overview_row)
 
@@ -140,11 +150,16 @@ def build_workbook(overview_rows, long_rows, unexpected_rows) -> Workbook:
         "total_nii_gz_files",
         "detected_expected_phases",
         "unexpected_phase_folders",
-        "arteriell_present", "arteriell_file_count",
-        "nativ_present", "nativ_file_count",
-        "spaet_present", "spaet_file_count",
-        "venous_present", "venous_file_count",
-        "non_def_present", "non_def_file_count",
+        "arteriell_present",
+        "arteriell_file_count",
+        "nativ_present",
+        "nativ_file_count",
+        "spaet_present",
+        "spaet_file_count",
+        "venous_present",
+        "venous_file_count",
+        "non_def_present",
+        "non_def_file_count",
     ]
     write_sheet(ws_overview, overview_headers, overview_rows)
 
@@ -181,6 +196,7 @@ def main():
     print(f"Patients found: {len(overview_rows)}")
     print(f"Phase rows written: {len(long_rows)}")
     print(f"Unexpected folders found: {len(unexpected_rows)}")
+
 
 if __name__ == "__main__":
     main()

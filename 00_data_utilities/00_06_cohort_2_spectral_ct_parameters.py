@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import re
@@ -14,17 +13,43 @@ from tqdm import tqdm
 
 # Configuration
 PATIENT_IDS: List[str] = [
-    "Pat1", "Pat2", "Pat3", "Pat4", "Pat5", "Pat6", "Pat8", "Pat9",
-    "Pat10", "Pat11", "Pat12", "Pat13", "Pat14", "Pat15", "Pat17", 'Pat18',
-    "Pat20", "Pat21", "Pat22", "Pat24", "Pat27", "Pat29", "Pat30",
+    "Pat1",
+    "Pat2",
+    "Pat3",
+    "Pat4",
+    "Pat5",
+    "Pat6",
+    "Pat8",
+    "Pat9",
+    "Pat10",
+    "Pat11",
+    "Pat12",
+    "Pat13",
+    "Pat14",
+    "Pat15",
+    "Pat17",
+    "Pat18",
+    "Pat20",
+    "Pat21",
+    "Pat22",
+    "Pat24",
+    "Pat27",
+    "Pat29",
+    "Pat30",
 ]
 
 
 @dataclass(frozen=True)
 class PathsConfig:
-    images_root: Path = Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/imagesAll")
-    labels_root: Path = Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/labelsAll")
-    out_xlsx: Path = Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/full_table/ct_parameters_liver.xlsx")
+    images_root: Path = Path(
+        "/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/imagesAll"
+    )
+    labels_root: Path = Path(
+        "/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/labelsAll"
+    )
+    out_xlsx: Path = Path(
+        "/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/full_table/ct_parameters_liver.xlsx"
+    )
     out_csv: Optional[Path] = None
 
 
@@ -64,7 +89,9 @@ def patient_map_path(patient_dir: Path, patient_id: str, suffix: str) -> Path:
     return patient_dir / f"{patient_id}-{suffix}"
 
 
-def resample_like(moving: sitk.Image, fixed: sitk.Image, is_label: bool, default_value: float = 0.0) -> sitk.Image:
+def resample_like(
+    moving: sitk.Image, fixed: sitk.Image, is_label: bool, default_value: float = 0.0
+) -> sitk.Image:
     """
     Resample moving image onto the fixed image grid using identity transform.
     Labels use nearest neighbor interpolation.
@@ -168,7 +195,9 @@ def combine_muscle_masks(abw: sitk.Image, para: sitk.Image) -> sitk.Image:
     return sitk.Or(abw_b, para_b)
 
 
-def apply_hu_threshold_to_mask(muscle_mask: sitk.Image, hu_img: sitk.Image, hu_min: float, hu_max: float) -> sitk.Image:
+def apply_hu_threshold_to_mask(
+    muscle_mask: sitk.Image, hu_img: sitk.Image, hu_min: float, hu_max: float
+) -> sitk.Image:
     hu_ok = sitk.And(sitk.GreaterEqual(hu_img, hu_min), sitk.LessEqual(hu_img, hu_max))
     hu_ok = sitk.Cast(hu_ok, sitk.sitkUInt8)
     return sitk.And(sitk.Cast(muscle_mask, sitk.sitkUInt8), hu_ok)
@@ -244,7 +273,11 @@ def compute_patient(patient_id: str, cfg: PathsConfig, pcfg: ParamConfig) -> Dic
     l3 = resample_like(l3_native, hu_native, is_label=True)
 
     # Sanity check after resampling
-    if hu_native.GetSize() != abw.GetSize() or hu_native.GetSize() != para.GetSize() or hu_native.GetSize() != l3.GetSize():
+    if (
+        hu_native.GetSize() != abw.GetSize()
+        or hu_native.GetSize() != para.GetSize()
+        or hu_native.GetSize() != l3.GetSize()
+    ):
         raise ValueError(
             f"Resampled mask size mismatch after alignment. "
             f"HU={hu_native.GetSize()}, abw={abw.GetSize()}, para={para.GetSize()}, l3={l3.GetSize()}"
@@ -269,7 +302,11 @@ def compute_patient(patient_id: str, cfg: PathsConfig, pcfg: ParamConfig) -> Dic
     roi_height_cm_3d = roi_height_cm_from_mask_slicecount(muscle_thr)
     area_cm2_3d = (
         float("nan")
-        if (not np.isfinite(volume_ml_3d) or not np.isfinite(roi_height_cm_3d) or roi_height_cm_3d == 0)
+        if (
+            not np.isfinite(volume_ml_3d)
+            or not np.isfinite(roi_height_cm_3d)
+            or roi_height_cm_3d == 0
+        )
         else float(volume_ml_3d / roi_height_cm_3d)
     )
 
@@ -355,7 +392,9 @@ def run_all(
         "ct_muscle_fat_2d",
         "ct_muscle_fat_3d",
     ]
-    cols = [c for c in preferred_cols if c in df.columns] + [c for c in df.columns if c not in preferred_cols]
+    cols = [c for c in preferred_cols if c in df.columns] + [
+        c for c in df.columns if c not in preferred_cols
+    ]
     df = df.loc[:, cols]
 
     cfg.out_xlsx.parent.mkdir(parents=True, exist_ok=True)

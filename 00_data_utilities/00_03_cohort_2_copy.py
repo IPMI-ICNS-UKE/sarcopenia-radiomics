@@ -92,13 +92,12 @@ def target_filename_from_source_name(filename: str) -> tuple[str | None, str]:
 
 
 def discover_masks(source_patient_dir: Path) -> list[Path]:
-    return sorted(
-        p for p in source_patient_dir.rglob("*.nii.gz")
-        if p.is_file()
-    )
+    return sorted(p for p in source_patient_dir.rglob("*.nii.gz") if p.is_file())
 
 
-def build_patient_plan(source_patient_dir: Path) -> tuple[dict[str, Path], list[tuple[Path, str]], dict[str, list[Path]]]:
+def build_patient_plan(
+    source_patient_dir: Path,
+) -> tuple[dict[str, Path], list[tuple[Path, str]], dict[str, list[Path]]]:
     resolved: dict[str, list[Path]] = defaultdict(list)
     unknown_files: list[tuple[Path, str]] = []
 
@@ -126,12 +125,17 @@ def ensure_dir(path: Path, dry_run: bool) -> None:
         path.mkdir(parents=True, exist_ok=True)
 
 
-def transfer_file(src: Path, dst: Path, mode: str, overwrite: bool, dry_run: bool) -> tuple[str, str]:
+def transfer_file(
+    src: Path, dst: Path, mode: str, overwrite: bool, dry_run: bool
+) -> tuple[str, str]:
     if dst.exists():
         if overwrite:
             status = "overwrite" if not dry_run else "would_overwrite"
         else:
-            return "skip_existing", "Destination file already exists. Use --overwrite to replace it."
+            return (
+                "skip_existing",
+                "Destination file already exists. Use --overwrite to replace it.",
+            )
 
     if dry_run:
         return f"would_{mode}", ""
@@ -175,7 +179,14 @@ def align_one_patient(
             overwrite=overwrite,
             dry_run=dry_run,
         )
-        if operation in {"copy", "move", "would_copy", "would_move", "overwrite", "would_overwrite"}:
+        if operation in {
+            "copy",
+            "move",
+            "would_copy",
+            "would_move",
+            "overwrite",
+            "would_overwrite",
+        }:
             transferred_count += 1
 
         _, label_candidate = target_filename_from_source_name(src_path.name)
@@ -254,7 +265,11 @@ def align_one_patient(
 
 def iter_patient_dirs(source_root: Path, patient_names: Iterable[str] | None = None) -> list[Path]:
     if patient_names is None:
-        dirs = [p for p in sorted(source_root.iterdir()) if p.is_dir() and re.fullmatch(r"S2_P\d+", p.name)]
+        dirs = [
+            p
+            for p in sorted(source_root.iterdir())
+            if p.is_dir() and re.fullmatch(r"S2_P\d+", p.name)
+        ]
         return dirs
 
     selected: list[Path] = []
@@ -358,7 +373,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--source-root",
         type=Path,
-        default=Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/unsorted/p773545"),
+        default=Path(
+            "/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/unsorted/p773545"
+        ),
         help="Root folder containing source patient folders",
     )
     parser.add_argument(

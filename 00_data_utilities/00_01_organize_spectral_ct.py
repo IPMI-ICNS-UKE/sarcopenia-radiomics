@@ -6,7 +6,9 @@ from typing import Optional
 
 
 SOURCE_DIR_DEFAULT = Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/unsorted")
-TARGET_DIR_DEFAULT = Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/imagesAll")
+TARGET_DIR_DEFAULT = Path(
+    "/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/imagesAll"
+)
 
 KNOWN_PHASES = {"arteriell", "nativ", "spaet", "venous"}
 NON_DEFINED_PHASE = "non_def"
@@ -118,11 +120,15 @@ def sort_images(
 
 
 def make_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Sort spectral CT .nii.gz files by patient and phase.")
+    parser = argparse.ArgumentParser(
+        description="Sort spectral CT .nii.gz files by patient and phase."
+    )
     parser.add_argument("--source", type=Path, default=SOURCE_DIR_DEFAULT, help="Source directory")
     parser.add_argument("--target", type=Path, default=TARGET_DIR_DEFAULT, help="Target directory")
     parser.add_argument("--copy", action="store_true", help="Copy files instead of moving them")
-    parser.add_argument("--dry-run", action="store_true", help="Preview operations without changing files")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Preview operations without changing files"
+    )
     parser.add_argument(
         "--skip-unmatched",
         action="store_true",

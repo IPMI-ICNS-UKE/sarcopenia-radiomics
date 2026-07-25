@@ -101,7 +101,8 @@ def collect_rename_actions(images_root: Path) -> tuple[list[RenameAction], list[
     warnings: list[str] = []
 
     patient_dirs = sorted(
-        path for path in images_root.iterdir()
+        path
+        for path in images_root.iterdir()
         if path.is_dir() and re.fullmatch(r"Pat\d+", path.name)
     )
 
@@ -111,9 +112,7 @@ def collect_rename_actions(images_root: Path) -> tuple[list[RenameAction], list[
         for file_path in iter_candidate_files(patient_dir):
             parsed = parse_source_filename(file_path.name)
             if parsed is None:
-                warnings.append(
-                    f"Skipping unmatched filename: {file_path}"
-                )
+                warnings.append(f"Skipping unmatched filename: {file_path}")
                 continue
 
             file_patient_id, phase, map_type = parsed
@@ -133,9 +132,7 @@ def collect_rename_actions(images_root: Path) -> tuple[list[RenameAction], list[
                 continue
 
             if destination_path.exists():
-                warnings.append(
-                    f"Destination already exists, skipping: {destination_path}"
-                )
+                warnings.append(f"Destination already exists, skipping: {destination_path}")
                 continue
 
             actions.append(

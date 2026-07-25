@@ -12,7 +12,9 @@ import SimpleITK as sitk
 # Configuration
 IMAGES_ROOT = Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/imagesAll")
 LABELS_ROOT = Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/labelsAll")
-OUTPUT_DIR = Path("/home/gkolokolnikov/PhD_project/spectral_ct_sarcopenia/SarcoSpectRadiomics/code_radiology/output/01_data_statistics")
+OUTPUT_DIR = Path(
+    "/home/gkolokolnikov/PhD_project/spectral_ct_sarcopenia/SarcoSpectRadiomics/code_radiology/output/01_data_statistics"
+)
 
 MAP_TYPES: Sequence[str] = (
     "HU",
@@ -129,7 +131,9 @@ def compare_direction(a: Sequence[float], b: Sequence[float], tol: float = SPACI
     return compare_float_tuples(a, b, tol=tol)
 
 
-def physical_extent_mm(size_xyz: Sequence[int], spacing_xyz: Sequence[float]) -> Tuple[float, float, float]:
+def physical_extent_mm(
+    size_xyz: Sequence[int], spacing_xyz: Sequence[float]
+) -> Tuple[float, float, float]:
     return tuple(float(s) * float(sp) for s, sp in zip(size_xyz, spacing_xyz))
 
 
@@ -199,9 +203,15 @@ def evaluate_pair(
         label_geom = read_geometry(label_path)
 
         shape_match = image_geom.size_xyz == label_geom.size_xyz
-        spacing_match = compare_float_tuples(image_geom.spacing_xyz, label_geom.spacing_xyz, tol=SPACING_TOL)
-        origin_match = compare_float_tuples(image_geom.origin_xyz, label_geom.origin_xyz, tol=SPACING_TOL)
-        direction_match = compare_direction(image_geom.direction, label_geom.direction, tol=SPACING_TOL)
+        spacing_match = compare_float_tuples(
+            image_geom.spacing_xyz, label_geom.spacing_xyz, tol=SPACING_TOL
+        )
+        origin_match = compare_float_tuples(
+            image_geom.origin_xyz, label_geom.origin_xyz, tol=SPACING_TOL
+        )
+        direction_match = compare_direction(
+            image_geom.direction, label_geom.direction, tol=SPACING_TOL
+        )
         geometry_match = shape_match and spacing_match and origin_match and direction_match
 
         expected_label_size = expected_size_after_spacing_change(
@@ -303,9 +313,13 @@ def run_qc(
                             image_exists=image_exists,
                             label_exists=label_exists,
                             error_message=(
-                                "Missing image file" if not image_exists and label_exists
-                                else "Missing label file" if image_exists and not label_exists
-                                else "Missing image and label files"
+                                "Missing image file"
+                                if not image_exists and label_exists
+                                else (
+                                    "Missing label file"
+                                    if image_exists and not label_exists
+                                    else "Missing image and label files"
+                                )
                             ),
                         )
                     )
