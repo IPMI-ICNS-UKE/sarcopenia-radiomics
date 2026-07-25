@@ -1,0 +1,46 @@
+name: sarcopenia-radiomics
+channels:
+  - defaults
+dependencies:
+  - python=3.11.10
+  - pip
+  - pip:
+      # PyTorch (CUDA 12.8 build). For CPU-only or a different CUDA version,
+      # replace this line with the appropriate index URL from
+      # https://pytorch.org/get-started/locally/ before installing.
+      - --extra-index-url https://download.pytorch.org/whl/cu128
+      - torch==2.10.0+cu128
+      - torchvision==0.25.0+cu128
+
+      # Core scientific stack
+      - numpy==2.2.6
+      - pandas==2.3.1
+      - scipy==1.16.1
+      - scikit-learn==1.5.2
+      - statsmodels==0.14.5
+
+      # Plotting (static + interactive)
+      - matplotlib==3.9.2
+      - seaborn==0.13.2
+      - plotly==6.0.1
+
+      # Medical imaging / radiomics
+      - SimpleITK==2.4.0
+      - pyradiomics==3.0.1
+
+      # Excel I/O
+      - openpyxl==3.1.5
+      - xlsxwriter==3.2.9
+
+      # Statistics / interpretability
+      - pingouin==0.5.5
+      - shap==0.48.0
+
+      # Utilities
+      - joblib==1.4.2
+      - tqdm==4.67.0
+
+# Deep radiomics (02_03_deep_radiomics, 03_03_deep_radiomics, 06_03_deep_radiomics)
+# additionally requires, outside this file:
+#   - external/MedDINOv3 and external/dinov3 checked out (see external/README.md)
+#   - models/model_meddinov3.pth present (see models/README.md)
