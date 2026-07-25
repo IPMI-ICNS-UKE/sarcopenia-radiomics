@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -11,18 +12,18 @@ import config_extended as config
 
 
 # Layout constants (tuned for Radiology journal style)
-FONT_FAMILY  = "Arial"
-FONT_SIZE_TITLE   = 11
-FONT_SIZE_LABEL   = 9
-FONT_SIZE_ANNOT   = 9
-FONT_SIZE_TICK    = 7
-FIGURE_WIDTH      = 7.0   # inches (journal column width ~ 3.5 in, full page ~ 7 in)
-FIGURE_HEIGHT     = 2.8
+FONT_FAMILY = "Arial"
+FONT_SIZE_TITLE = 11
+FONT_SIZE_LABEL = 9
+FONT_SIZE_ANNOT = 9
+FONT_SIZE_TICK = 7
+FIGURE_WIDTH = 7.0  # inches (journal column width ~ 3.5 in, full page ~ 7 in)
+FIGURE_HEIGHT = 2.8
 
 # Color boundaries for p-value significance
 P_BOUNDARIES = [0.0, 0.001, 0.01, 0.05, 0.10, 1.01]
-P_COLORS     = ["#67001f", "#d6604d", "#f4a582", "#d1e5f0", "#e0e0e0"]
-P_LABELS     = ["p<0.001", "0.001≤p<0.01", "0.01≤p<0.05", "0.05≤p<0.10", "p≥0.10"]
+P_COLORS = ["#67001f", "#d6604d", "#f4a582", "#d1e5f0", "#e0e0e0"]
+P_LABELS = ["p<0.001", "0.001≤p<0.01", "0.01≤p<0.05", "0.05≤p<0.10", "p≥0.10"]
 
 ROW_METHODS = ["auto_smi", "auto_mra_score_clinical"]
 COL_METHODS = [
@@ -108,11 +109,13 @@ def plot_pvalue_heatmap(
                         break
 
     # ─── Figure setup ─────────────────────────────────────────────────────────
-    plt.rcParams.update({
-        "font.family": FONT_FAMILY,
-        "axes.spines.top": False,
-        "axes.spines.right": False,
-    })
+    plt.rcParams.update(
+        {
+            "font.family": FONT_FAMILY,
+            "axes.spines.top": False,
+            "axes.spines.right": False,
+        }
+    )
 
     fig, ax = plt.subplots(figsize=(FIGURE_WIDTH, FIGURE_HEIGHT))
 
@@ -132,8 +135,11 @@ def plot_pvalue_heatmap(
             ci = int(color_matrix[i, j])
             text_color = "white" if ci <= 1 else "#1a1a1a"
             ax.text(
-                j, i, annot,
-                ha="center", va="center",
+                j,
+                i,
+                annot,
+                ha="center",
+                va="center",
                 fontsize=FONT_SIZE_ANNOT,
                 color=text_color,
                 fontweight="bold" if not np.isnan(p) and p < 0.05 else "normal",
@@ -143,8 +149,11 @@ def plot_pvalue_heatmap(
     # ─── Axis labels ──────────────────────────────────────────────────────────
     ax.set_xticks(range(len(COL_LABELS)))
     ax.set_xticklabels(
-        COL_LABELS, fontsize=FONT_SIZE_TICK, ha="center",
-        multialignment="center", wrap=True,
+        COL_LABELS,
+        fontsize=FONT_SIZE_TICK,
+        ha="center",
+        multialignment="center",
+        wrap=True,
     )
     ax.set_yticks(range(len(ROW_LABELS)))
     ax.set_yticklabels(ROW_LABELS, fontsize=FONT_SIZE_TICK)
@@ -156,17 +165,23 @@ def plot_pvalue_heatmap(
     ax.tick_params(which="minor", bottom=False, left=False)
 
     # ─── Title ────────────────────────────────────────────────────────────────
-    task_label  = "Classification (AUC, DeLong test)" if (task == "cls" or task == "cls_2") else "Regression (absolute errors, Wilcoxon signed-rank test)"
+    task_label = (
+        "Classification (AUC, DeLong test)"
+        if (task == "cls" or task == "cls_2")
+        else "Regression (absolute errors, Wilcoxon signed-rank test)"
+    )
     subset_label = config.DATA_SUBSETS[task][subset_key]["display_name"]
     correction_label = {
-        "fdr_bh":    "BH-FDR corrected",
+        "fdr_bh": "BH-FDR corrected",
         "bonferroni": "Bonferroni corrected",
-        "none":      "uncorrected",
+        "none": "uncorrected",
     }.get(config.CORRECTION_METHOD, config.CORRECTION_METHOD)
 
     ax.set_title(
         f"P-value comparison — {task_label}\n{subset_label} | {correction_label}",
-        fontsize=FONT_SIZE_TITLE, fontweight="bold", pad=12,
+        fontsize=FONT_SIZE_TITLE,
+        fontweight="bold",
+        pad=12,
     )
 
     # ─── Legend ───────────────────────────────────────────────────────────────

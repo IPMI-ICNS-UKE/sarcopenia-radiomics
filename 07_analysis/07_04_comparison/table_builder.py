@@ -63,7 +63,9 @@ def _reformat_metric(ci_str: str, decimals: int = config.DECIMAL_POINTS) -> str:
     return f"{point_fmt} ({ci_fmt})"
 
 
-def _get_sensitivity_specificity_str(row: pd.Series, metric: str, ci_col: str, decimals: int) -> str:
+def _get_sensitivity_specificity_str(
+    row: pd.Series, metric: str, ci_col: str, decimals: int
+) -> str:
     """
     Format sensitivity or specificity with numerator/denominator from confusion matrix.
     Returns: '0.XX (0.YY-0.ZZ) (TP/P)' or '0.XX (0.YY-0.ZZ) (TN/N)'
@@ -79,11 +81,11 @@ def _get_sensitivity_specificity_str(row: pd.Series, metric: str, ci_col: str, d
 
     if metric == "Sensitivity" and tp is not None and fn is not None:
         denom = int(tp + fn) if not (np.isnan(float(tp)) or np.isnan(float(fn))) else "?"
-        num   = int(tp) if not np.isnan(float(tp)) else "?"
+        num = int(tp) if not np.isnan(float(tp)) else "?"
         return f"{ci_str} ({num}/{denom})"
     elif metric == "Specificity" and tn is not None and fp is not None:
         denom = int(tn + fp) if not (np.isnan(float(tn)) or np.isnan(float(fp))) else "?"
-        num   = int(tn) if not np.isnan(float(tn)) else "?"
+        num = int(tn) if not np.isnan(float(tn)) else "?"
         return f"{ci_str} ({num}/{denom})"
     return ci_str
 
@@ -170,7 +172,11 @@ def build_cls_block(
     ba_vals = {}
     for method in config.METHOD_ORDER:
         row = metrics.get(method)
-        val = _reformat_metric(row.get("Balanced_Accuracy_CI95", "N/A"), decimals) if row is not None else "N/A"
+        val = (
+            _reformat_metric(row.get("Balanced_Accuracy_CI95", "N/A"), decimals)
+            if row is not None
+            else "N/A"
+        )
         ba_vals[config.METHOD_DISPLAY_NAMES[method]] = val
     rows_data["Balanced accuracy [CI 95%]"] = ba_vals
 
@@ -178,7 +184,11 @@ def build_cls_block(
     spec_vals = {}
     for method in config.METHOD_ORDER:
         row = metrics.get(method)
-        val = _get_sensitivity_specificity_str(row, "Specificity", "Specificity_CI95", decimals) if row is not None else "N/A"
+        val = (
+            _get_sensitivity_specificity_str(row, "Specificity", "Specificity_CI95", decimals)
+            if row is not None
+            else "N/A"
+        )
         spec_vals[config.METHOD_DISPLAY_NAMES[method]] = val
     rows_data["Specificity [CI 95%] (num/denom)"] = spec_vals
 
@@ -186,7 +196,11 @@ def build_cls_block(
     sens_vals = {}
     for method in config.METHOD_ORDER:
         row = metrics.get(method)
-        val = _get_sensitivity_specificity_str(row, "Sensitivity", "Sensitivity_CI95", decimals) if row is not None else "N/A"
+        val = (
+            _get_sensitivity_specificity_str(row, "Sensitivity", "Sensitivity_CI95", decimals)
+            if row is not None
+            else "N/A"
+        )
         sens_vals[config.METHOD_DISPLAY_NAMES[method]] = val
     rows_data["Sensitivity [CI 95%] (num/denom)"] = sens_vals
 
@@ -281,7 +295,8 @@ def build_reg_block(
             if r is not None and not (isinstance(r, float) and np.isnan(r)):
                 spearman_vals[config.METHOD_DISPLAY_NAMES[method]] = (
                     f"{_fmt(float(r), decimals)} (p={_fmt_pvalue(float(p))})"
-                    if p is not None else _fmt(float(r), decimals)
+                    if p is not None
+                    else _fmt(float(r), decimals)
                 )
             else:
                 spearman_vals[config.METHOD_DISPLAY_NAMES[method]] = "N/A"
@@ -306,48 +321,58 @@ def _apply_excel_formatting(writer: pd.ExcelWriter, sheet_name: str, df: pd.Data
     wb = writer.book
     ws = writer.sheets[sheet_name]
 
-    header_fmt = wb.add_format({
-        "bold": True,
-        "bg_color": "#2E4057",
-        "font_color": "#FFFFFF",
-        "align": "center",
-        "valign": "vcenter",
-        "border": 1,
-        "text_wrap": True,
-    })
-    metric_header_fmt = wb.add_format({
-        "bold": True,
-        "bg_color": "#E8EFF7",
-        "align": "left",
-        "valign": "vcenter",
-        "border": 1,
-        "text_wrap": True,
-    })
-    section_header_fmt = wb.add_format({
-        "bold": True,
-        "bg_color": "#4A7C99",
-        "font_color": "#FFFFFF",
-        "align": "left",
-        "valign": "vcenter",
-        "border": 1,
-        "italic": True,
-    })
-    cell_fmt = wb.add_format({
-        "align": "center",
-        "valign": "vcenter",
-        "border": 1,
-        "text_wrap": True,
-    })
-    pvalue_sig_fmt = wb.add_format({
-        "align": "center",
-        "valign": "vcenter",
-        "border": 1,
-        "bold": True,
-        "font_color": "#CC0000",  # red for significant
-    })
+    header_fmt = wb.add_format(
+        {
+            "bold": True,
+            "bg_color": "#2E4057",
+            "font_color": "#FFFFFF",
+            "align": "center",
+            "valign": "vcenter",
+            "border": 1,
+            "text_wrap": True,
+        }
+    )
+    metric_header_fmt = wb.add_format(
+        {
+            "bold": True,
+            "bg_color": "#E8EFF7",
+            "align": "left",
+            "valign": "vcenter",
+            "border": 1,
+            "text_wrap": True,
+        }
+    )
+    section_header_fmt = wb.add_format(
+        {
+            "bold": True,
+            "bg_color": "#4A7C99",
+            "font_color": "#FFFFFF",
+            "align": "left",
+            "valign": "vcenter",
+            "border": 1,
+            "italic": True,
+        }
+    )
+    cell_fmt = wb.add_format(
+        {
+            "align": "center",
+            "valign": "vcenter",
+            "border": 1,
+            "text_wrap": True,
+        }
+    )
+    pvalue_sig_fmt = wb.add_format(
+        {
+            "align": "center",
+            "valign": "vcenter",
+            "border": 1,
+            "bold": True,
+            "font_color": "#CC0000",  # red for significant
+        }
+    )
 
     # Column widths
-    ws.set_column(0, 0, 36)   # row index
+    ws.set_column(0, 0, 36)  # row index
     for col_idx in range(1, len(df.columns) + 1):
         ws.set_column(col_idx, col_idx, 28)
 

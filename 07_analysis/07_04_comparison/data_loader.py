@@ -36,9 +36,7 @@ def load_predictions(task: str, subset_key: str, method_name: str) -> Optional[p
     return df
 
 
-def get_method_row(
-    metrics_df: pd.DataFrame, method_name: str
-) -> Optional[pd.Series]:
+def get_method_row(metrics_df: pd.DataFrame, method_name: str) -> Optional[pd.Series]:
     """
     Extract the row for a given model_name from a metrics DataFrame.
     Matches by the method_name key (exact) inside the 'model_name' column.
@@ -55,7 +53,7 @@ def get_method_row(
 def load_all_data() -> Dict:
     data: Dict = {"metrics": {}, "predictions": {}}
 
-    for task in ["cls", "reg", 'cls_2']:
+    for task in ["cls", "reg", "cls_2"]:
         data["metrics"][task] = {}
         data["predictions"][task] = {}
         for subset_key in ["train", "test_1", "test_2"]:

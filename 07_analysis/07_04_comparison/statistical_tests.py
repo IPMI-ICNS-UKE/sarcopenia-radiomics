@@ -8,11 +8,10 @@ from statsmodels.stats.multitest import multipletests
 import config_extended as config
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 # DeLong test implementation
 # Reference: DeLong et al. (1988) Comparing the areas under two or more
 #            correlated receiver operating characteristic curves.
-# ─────────────────────────────────────────────────────────────────────────────
+
 
 def _placement_values(scores: np.ndarray, labels: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """Compute placement values V10, V01 needed for DeLong variance."""
@@ -85,7 +84,7 @@ def delong_test(
     mask = ~(np.isnan(scores_a) | np.isnan(scores_b) | np.isnan(labels.astype(float)))
     scores_a = scores_a[mask]
     scores_b = scores_b[mask]
-    labels   = labels[mask]
+    labels = labels[mask]
 
     if len(np.unique(labels)) < 2:
         return np.nan, np.nan, np.nan, np.nan
@@ -113,10 +112,9 @@ def delong_test(
     return auc_a, auc_b, z, p
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 # Regression comparison: Wilcoxon signed-rank test on paired absolute errors
 # Reference: Wilcoxon (1945); scipy.stats.wilcoxon
-# ─────────────────────────────────────────────────────────────────────────────
+
 
 def wilcoxon_error_test(
     preds_a: np.ndarray,
@@ -156,7 +154,7 @@ def wilcoxon_error_test(
     mask = ~(np.isnan(preds_a) | np.isnan(preds_b) | np.isnan(targets))
     preds_a = preds_a[mask]
     preds_b = preds_b[mask]
-    targets  = targets[mask]
+    targets = targets[mask]
 
     n = len(targets)
     if n < 5:
@@ -178,9 +176,8 @@ def wilcoxon_error_test(
     return rmse_a, rmse_b, float(stat), float(p_value)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 # Multiple comparison correction
-# ─────────────────────────────────────────────────────────────────────────────
+
 
 def apply_correction(
     p_values: List[Optional[float]],
@@ -220,9 +217,8 @@ def apply_correction(
     return result
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 # High-level: compute all p-values for one task × subset block
-# ─────────────────────────────────────────────────────────────────────────────
+
 
 def compute_pvalues_block(
     task: str,
@@ -265,7 +261,7 @@ def compute_pvalues_block(
     raw_pvalues: List[Optional[float]] = []
 
     for new_method, baseline_method in config.COMPARISON_PAIRS:
-        pred_new_df  = predictions.get(new_method)
+        pred_new_df = predictions.get(new_method)
         pred_base_df = predictions.get(baseline_method)
 
         if pred_new_df is None or pred_base_df is None:
@@ -275,7 +271,7 @@ def compute_pvalues_block(
         # ── Filter to the specific model_name before merging ─────────────────
         # Each CSV contains rows for multiple models; without this filter the
         # merge on patient_id alone would produce a cartesian product.
-        pred_new_filtered  = pred_new_df[pred_new_df["model_name"] == new_method].copy()
+        pred_new_filtered = pred_new_df[pred_new_df["model_name"] == new_method].copy()
         pred_base_filtered = pred_base_df[pred_base_df["model_name"] == baseline_method].copy()
 
         if pred_new_filtered.empty or pred_base_filtered.empty:
@@ -297,7 +293,7 @@ def compute_pvalues_block(
             )
             return "pred_score"
 
-        score_col_new  = _resolve_score_col(pred_new_filtered,  score_col, new_method)
+        score_col_new = _resolve_score_col(pred_new_filtered, score_col, new_method)
         score_col_base = _resolve_score_col(pred_base_filtered, score_col, baseline_method)
 
         # ── Merge on patient_id (one row per patient per model now) ───────────
@@ -313,13 +309,15 @@ def compute_pvalues_block(
         ).dropna(subset=["score_new", "score_base", "target"])
 
         if len(merged) < 5:
-            print(f"  [WARNING] Too few aligned patients ({len(merged)}) for [{new_method}] vs [{baseline_method}].")
+            print(
+                f"  [WARNING] Too few aligned patients ({len(merged)}) for [{new_method}] vs [{baseline_method}]."
+            )
             raw_pvalues.append(None)
             continue
 
         targets = merged["target"].values.astype(float)
-        s_new   = merged["score_new"].values.astype(float)
-        s_base  = merged["score_base"].values.astype(float)
+        s_new = merged["score_new"].values.astype(float)
+        s_base = merged["score_base"].values.astype(float)
 
         if task == "cls":
             _, _, _, p = delong_test(s_new, s_base, targets)
@@ -336,7 +334,7 @@ def compute_pvalues_block(
     result = {}
     for i, (new_method, baseline_method) in enumerate(config.COMPARISON_PAIRS):
         result[(new_method, baseline_method)] = {
-            "raw":       raw_pvalues[i],
+            "raw": raw_pvalues[i],
             "corrected": corrected_pvalues[i],
         }
     return result

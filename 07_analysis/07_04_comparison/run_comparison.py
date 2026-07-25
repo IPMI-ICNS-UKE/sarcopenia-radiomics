@@ -63,7 +63,7 @@ def main() -> None:
             metrics=data["metrics"]["cls_2"][subset_key],
             predictions=data["predictions"]["cls_2"][subset_key],
             pvalues=all_pvalues["cls_2"][subset_key],
-            data_subset="cls_2"
+            data_subset="cls_2",
         )
 
     save_comparison_tables(cls_blocks, reg_blocks, cls_2_blocks, config.OUTPUT_DIR)

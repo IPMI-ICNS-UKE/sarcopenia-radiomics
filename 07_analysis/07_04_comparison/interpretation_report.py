@@ -23,18 +23,15 @@ def _interpret_pair(
     if key not in pvalues:
         return f"  [N/A] Comparison not available."
 
-    p_raw  = pvalues[key].get("raw")
+    p_raw = pvalues[key].get("raw")
     p_corr = pvalues[key].get("corrected")
     p_disp = p_corr if use_corrected else p_raw
 
-    new_display  = config.METHOD_DISPLAY_NAMES[new_method]
+    new_display = config.METHOD_DISPLAY_NAMES[new_method]
     base_display = config.METHOD_DISPLAY_NAMES[baseline_method]
 
     if p_disp is None or np.isnan(p_disp):
-        return (
-            f"  [N/A] p-value could not be computed "
-            f"(insufficient data or alignment issue)."
-        )
+        return f"  [N/A] p-value could not be computed " f"(insufficient data or alignment issue)."
 
     p_label = f"p={p_disp:.4f}" if p_disp >= 0.001 else "p<0.001"
     correction_note = (
@@ -42,9 +39,7 @@ def _interpret_pair(
     )
 
     if p_disp < config.ALPHA:
-        direction = (
-            "superior" if (task == "cls") or (task == "cls_2") else "superior (lower RMSE)"
-        )
+        direction = "superior" if (task == "cls") or (task == "cls_2") else "superior (lower RMSE)"
         conclusion = (
             f"  ✓ SIGNIFICANT: '{new_display}' is statistically {direction} to "
             f"'{base_display}' [{p_label} {correction_note}, α={config.ALPHA}]."
@@ -121,12 +116,10 @@ def generate_interpretation_report(
             lines.append("")
 
             for new_method, baseline_method in config.COMPARISON_PAIRS:
-                new_display  = config.METHOD_DISPLAY_NAMES[new_method]
+                new_display = config.METHOD_DISPLAY_NAMES[new_method]
                 base_display = config.METHOD_DISPLAY_NAMES[baseline_method]
                 lines.append(f"  [{new_display}] vs [{base_display}]")
-                interp = _interpret_pair(
-                    new_method, baseline_method, pvalues, task, use_corrected
-                )
+                interp = _interpret_pair(new_method, baseline_method, pvalues, task, use_corrected)
                 lines.append(interp)
 
                 # Raw p-value footnote
@@ -136,9 +129,7 @@ def generate_interpretation_report(
                         p_raw = pvalues[key].get("raw")
                         p_corr = pvalues[key].get("corrected")
                         if p_raw is not None:
-                            lines.append(
-                                f"    [raw p={p_raw:.4f} | corrected p={p_corr:.4f}]"
-                            )
+                            lines.append(f"    [raw p={p_raw:.4f} | corrected p={p_corr:.4f}]")
                 lines.append("")
 
     lines.append("=" * 80)
