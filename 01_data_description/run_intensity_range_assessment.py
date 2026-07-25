@@ -8,21 +8,19 @@ import SimpleITK as sitk
 from tqdm import tqdm
 
 
-
 # Configuration
 @dataclass(frozen=True)
 class Config:
     table_path: Path = Path(
         "/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaData/table/ground_truth.xlsx"
     )
-    images_root: Path = Path(
-        "/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaData/imagesAll"
-    )
-    labels_root: Path = Path(
-        "/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaData/labelsAll"
-    )
+    images_root: Path = Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaData/imagesAll")
+    labels_root: Path = Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaData/labelsAll")
     output_xlsx: Path = (
-        Path(__file__).resolve().parents[1] / "output" / "01_data_statistics" / "intensity_ranges.xlsx"
+        Path(__file__).resolve().parents[1]
+        / "output"
+        / "01_data_statistics"
+        / "intensity_ranges.xlsx"
     )
 
     # Approved cohort filters
@@ -49,7 +47,8 @@ class Config:
 
     abdominal_wall_name: str = "abdominal_wall.nii.gz"
     paravertebral_name: str = "paravertebral.nii.gz"
-    
+
+
 CFG = Config()
 
 

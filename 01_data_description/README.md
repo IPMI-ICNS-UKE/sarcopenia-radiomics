@@ -13,7 +13,7 @@ feature extraction (Appendix S4).
 | `run_data_description.py` | Entry point: loads training / primary test / secondary test sets and writes `data_description_statistics.xlsx` (dataset overview + baseline characteristics table, i.e. Table 1). |
 | `run_intensity_range_assessment.py` | Entry point: for every conventional CT and spectral CT map, computes whole-image and within-muscle-mask intensity statistics (min/max/mean/quartiles) per patient, then aggregates across patients into `intensity_ranges.xlsx`. Used to inform the clipping bounds documented in Appendix S4. |
 
-## Usage
+## Running
 
 Run from within this folder so the local imports (`sct_data_loader`, `sct_statistics`)
 resolve correctly:

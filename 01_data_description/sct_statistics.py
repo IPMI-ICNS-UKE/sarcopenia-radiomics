@@ -7,8 +7,8 @@ from scipy.stats import chi2_contingency, fisher_exact, mannwhitneyu, shapiro, t
 CONTINUOUS_VARS = [
     "age",
     "bmi",
-    "ct_muscle_mass_2d",      # SMI 2D
-    "ct_muscle_density_2d",   # MRA 2D
+    "ct_muscle_mass_2d",  # SMI 2D
+    "ct_muscle_density_2d",  # MRA 2D
     "ct_muscle_fat_segm_2d",  # FF 2D
 ]
 
@@ -307,7 +307,9 @@ def _set_group_value(row: Dict[str, str], group_name: str, value: str) -> None:
     row[iqr_col] = ""
 
 
-def _set_comparison(row: Dict[str, str], left_name: str, right_name: str, p_value, test_name: str) -> None:
+def _set_comparison(
+    row: Dict[str, str], left_name: str, right_name: str, p_value, test_name: str
+) -> None:
     p_col, test_col = _comparison_columns(left_name, right_name)
     row[p_col] = format_p_value(p_value)
     row[test_col] = test_name
@@ -377,9 +379,15 @@ def build_data_description_table_three_groups(
     sex3 = count_sex(df_group3, sex_col, female_value, male_value)
 
     row_female = {"Parameter": "Sex: female, n (%)"}
-    _set_group_value(row_female, group1_name, _format_n_pct(sex1["female"], sex1["total"], decimals))
-    _set_group_value(row_female, group2_name, _format_n_pct(sex2["female"], sex2["total"], decimals))
-    _set_group_value(row_female, group3_name, _format_n_pct(sex3["female"], sex3["total"], decimals))
+    _set_group_value(
+        row_female, group1_name, _format_n_pct(sex1["female"], sex1["total"], decimals)
+    )
+    _set_group_value(
+        row_female, group2_name, _format_n_pct(sex2["female"], sex2["total"], decimals)
+    )
+    _set_group_value(
+        row_female, group3_name, _format_n_pct(sex3["female"], sex3["total"], decimals)
+    )
 
     p_sex_12, test_sex_12 = compare_binary_from_counts(
         pos1=sex1["female"], neg1=sex1["male"], pos2=sex2["female"], neg2=sex2["male"]
@@ -409,15 +417,21 @@ def build_data_description_table_three_groups(
     rows.append(row_male)
 
     # ECOG rows
-    ecog_stats_1 = summarize_ecog_levels(df_group1, ecog_col=ecog_col, levels=ECOG_LEVELS, decimals=decimals)
-    ecog_stats_2 = summarize_ecog_levels(df_group2, ecog_col=ecog_col, levels=ECOG_LEVELS, decimals=decimals)
+    ecog_stats_1 = summarize_ecog_levels(
+        df_group1, ecog_col=ecog_col, levels=ECOG_LEVELS, decimals=decimals
+    )
+    ecog_stats_2 = summarize_ecog_levels(
+        df_group2, ecog_col=ecog_col, levels=ECOG_LEVELS, decimals=decimals
+    )
     ecog_stats_3 = (
         summarize_ecog_levels(df_group3, ecog_col=ecog_col, levels=ECOG_LEVELS, decimals=decimals)
         if group3_has_ecog
         else {lvl: "NA" for lvl in ECOG_LEVELS}
     )
 
-    p_ecog_12, test_ecog_12 = compare_ecog(df_group1[ecog_col], df_group2[ecog_col], levels=ECOG_LEVELS)
+    p_ecog_12, test_ecog_12 = compare_ecog(
+        df_group1[ecog_col], df_group2[ecog_col], levels=ECOG_LEVELS
+    )
 
     for idx, level in enumerate(ECOG_LEVELS):
         row = {"Parameter": f"ECOG {level}, n (%)"}
