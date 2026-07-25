@@ -45,18 +45,12 @@ def _binary_counts(series: pd.Series, positive) -> Tuple[int, int, int]:
     return pos, neg, int(valid.sum())
 
 
-def _continuous_pvalue(
-    groups: List[pd.DataFrame], col: str, cfg: C.RunConfig
-) -> StatResult:
-    data = [pd.to_numeric(_series(g, col), errors="coerce").to_numpy()
-            for g in groups]
-    return continuous_test(data, mode=cfg.continuous_test,
-                           alpha=C.NORMALITY_ALPHA)
+def _continuous_pvalue(groups: List[pd.DataFrame], col: str, cfg: C.RunConfig) -> StatResult:
+    data = [pd.to_numeric(_series(g, col), errors="coerce").to_numpy() for g in groups]
+    return continuous_test(data, mode=cfg.continuous_test, alpha=C.NORMALITY_ALPHA)
 
 
-def _binary_pvalue(
-    groups: List[pd.DataFrame], col: str, positive, cfg: C.RunConfig
-) -> StatResult:
+def _binary_pvalue(groups: List[pd.DataFrame], col: str, positive, cfg: C.RunConfig) -> StatResult:
     table = []
     for g in groups:
         pos, neg, _ = _binary_counts(_series(g, col), positive)
@@ -124,8 +118,7 @@ def build_table1(
 
     # Cohort row
     t.add(
-        ["Cohort", C.COHORT1_DESCRIPTION, C.COHORT1_DESCRIPTION,
-         C.COHORT2_DESCRIPTION, ""],
+        ["Cohort", C.COHORT1_DESCRIPTION, C.COHORT1_DESCRIPTION, C.COHORT2_DESCRIPTION, ""],
         KIND_COHORT,
     )
 
@@ -155,16 +148,12 @@ def build_table1(
         ["Sex, n (%)", "", "", "", format_pvalue(res_sex.p_value, pdec, cut)],
         KIND_DATA,
     )
-    for sub_label, sex_value in (("Male", C.SEX_MALE_VALUE),
-                                 ("Female", C.SEX_FEMALE_VALUE)):
+    for sub_label, sex_value in (("Male", C.SEX_MALE_VALUE), ("Female", C.SEX_FEMALE_VALUE)):
         cells = [sub_label]
         for g in ordered:
             s = pd.to_numeric(_series(g, COL.sex), errors="coerce")
             denom = valid_denominator(s, len(g), cfg.percent_denominator)
-            cells.append(
-                count_percent(int((s == sex_value).sum()), denom, d,
-                              C.PERCENT_SYMBOL)
-            )
+            cells.append(count_percent(int((s == sex_value).sum()), denom, d, C.PERCENT_SYMBOL))
         cells.append("")
         t.add(cells, KIND_SUB)
 
@@ -225,8 +214,7 @@ def build_table2(groups: Dict[str, pd.DataFrame], cfg: C.RunConfig) -> TableMode
         for g in ordered:
             s = pd.to_numeric(_series(g, COL.ecog), errors="coerce")
             denom = int(s.notna().sum())
-            cells.append(count_percent(int((s == cat).sum()), denom, d,
-                                       C.PERCENT_SYMBOL))
+            cells.append(count_percent(int((s == cat).sum()), denom, d, C.PERCENT_SYMBOL))
         t.add(cells, KIND_SUB)
 
     # Tumor type
@@ -239,8 +227,7 @@ def build_table2(groups: Dict[str, pd.DataFrame], cfg: C.RunConfig) -> TableMode
         cells = [label]
         for vc in tumor_counts:
             denom = int(vc.sum())
-            cells.append(count_percent(int(vc.get(label, 0)), denom, d,
-                                       C.PERCENT_SYMBOL))
+            cells.append(count_percent(int(vc.get(label, 0)), denom, d, C.PERCENT_SYMBOL))
         t.add(cells, KIND_SUB)
 
     # Metastasis flags
@@ -253,8 +240,7 @@ def build_table2(groups: Dict[str, pd.DataFrame], cfg: C.RunConfig) -> TableMode
             s = pd.to_numeric(_series(g, col), errors="coerce")
             denom = valid_denominator(s, len(g), cfg.percent_denominator)
             cells.append(
-                count_percent(int((s == C.POSITIVE_VALUE).sum()), denom, d,
-                              C.PERCENT_SYMBOL)
+                count_percent(int((s == C.POSITIVE_VALUE).sum()), denom, d, C.PERCENT_SYMBOL)
             )
         t.add(cells, KIND_DATA)
 
@@ -292,9 +278,7 @@ def build_table3(groups: Dict[str, pd.DataFrame], cfg: C.RunConfig) -> TableMode
     cp_denom = int(cp.notna().sum())
     for grade in C.CHILD_PUGH_CATEGORIES:
         t.add(
-            [grade,
-             count_percent(int((cp == grade).sum()), cp_denom, d,
-                           C.PERCENT_SYMBOL)],
+            [grade, count_percent(int((cp == grade).sum()), cp_denom, d, C.PERCENT_SYMBOL)],
             KIND_SUB,
         )
 
@@ -306,9 +290,7 @@ def build_table3(groups: Dict[str, pd.DataFrame], cfg: C.RunConfig) -> TableMode
         s = pd.to_numeric(_series(g_t2, col), errors="coerce")
         denom = valid_denominator(s, len(g_t2), cfg.percent_denominator)
         t.add(
-            [label,
-             count_percent(int((s == C.POSITIVE_VALUE).sum()), denom, d,
-                           C.PERCENT_SYMBOL)],
+            [label, count_percent(int((s == C.POSITIVE_VALUE).sum()), denom, d, C.PERCENT_SYMBOL)],
             KIND_DATA,
         )
 
@@ -316,22 +298,15 @@ def build_table3(groups: Dict[str, pd.DataFrame], cfg: C.RunConfig) -> TableMode
 
 
 # Statistical-methods sheet
-def build_methods_table(
-    methods: List[Tuple[str, str, StatResult]], cfg: C.RunConfig
-) -> TableModel:
+def build_methods_table(methods: List[Tuple[str, str, StatResult]], cfg: C.RunConfig) -> TableModel:
     t = TableModel(
         title="Statistical methods (Table 1 group comparisons).",
-        header=["Variable", "Comparison", "Statistical test",
-                "p-value", "n used"],
+        header=["Variable", "Comparison", "Statistical test", "p-value", "n used"],
         sheet_name="Statistical methods",
     )
     for var, comparison, res in methods:
-        p_txt = (
-            "" if res.p_value is None or np.isnan(res.p_value)
-            else f"{res.p_value:.6f}"
-        )
-        t.add([var, comparison, res.test_name, p_txt, str(res.n_used)],
-              KIND_DATA)
+        p_txt = "" if res.p_value is None or np.isnan(res.p_value) else f"{res.p_value:.6f}"
+        t.add([var, comparison, res.test_name, p_txt, str(res.n_used)], KIND_DATA)
     note = (
         "Continuous: Shapiro-Wilk + Levene -> one-way ANOVA if normal & "
         "equal-variance, otherwise Kruskal-Wallis. Categorical: Pearson "

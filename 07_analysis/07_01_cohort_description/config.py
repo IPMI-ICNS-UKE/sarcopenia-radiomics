@@ -7,11 +7,14 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 # Paths
 # Ground-truth tables (override via CLI if needed).
 COHORT1_TABLE = "/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaData/table/ground_truth.xlsx"
-COHORT2_TABLE = "/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/table/ground_truth.xlsx"
+COHORT2_TABLE = (
+    "/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/table/ground_truth.xlsx"
+)
 
 OUTPUT_DIR = os.path.join(REPO_ROOT, "output", "07_01_cohort_description")
 
 OUTPUT_WORKBOOK_NAME = "cohort_description_tables.xlsx"
+
 
 # Column names (as they appear in ground_truth.xlsx)
 @dataclass(frozen=True)
@@ -111,10 +114,10 @@ COHORT1_DESCRIPTION = "Cohort 1: gastrointestinal tumors with palliative chemoth
 COHORT2_DESCRIPTION = "Cohort 2: patients with end-stage liver disease awaiting liver transplant"
 
 # Formatting options
-DECIMALS = 1               # rounding for every value except p-values
-PVALUE_DECIMALS = 3        # rounding for p-values
+DECIMALS = 1  # rounding for every value except p-values
+PVALUE_DECIMALS = 3  # rounding for p-values
 PVALUE_SMALL_CUTOFF = 0.001  # show "<0.001" below this
-PERCENT_SYMBOL = "%"       # set to "" to drop the percent sign
+PERCENT_SYMBOL = "%"  # set to "" to drop the percent sign
 
 # Denominator for "n (%)" cells:
 #   "valid"  -> percentage over non-missing values within the group (default)
@@ -136,10 +139,10 @@ CONTINUOUS_TEST = "auto"
 #   "fisher_mc" -> always exact / Monte-Carlo
 CATEGORICAL_TEST = "auto"
 
-NORMALITY_ALPHA = 0.05          # Shapiro-Wilk / Levene decision threshold
-MIN_EXPECTED_COUNT = 5          # chi-square validity threshold
-MONTE_CARLO_RESAMPLES = 10000   # permutations for r x c Monte-Carlo test
-RANDOM_SEED = 2025              # reproducible Monte-Carlo p-values
+NORMALITY_ALPHA = 0.05  # Shapiro-Wilk / Levene decision threshold
+MIN_EXPECTED_COUNT = 5  # chi-square validity threshold
+MONTE_CARLO_RESAMPLES = 10000  # permutations for r x c Monte-Carlo test
+RANDOM_SEED = 2025  # reproducible Monte-Carlo p-values
 
 # Whether to also compute a p-value for the composite-sarcopenia row of
 # Table 1.  Enabled per study request (compares the composite definition

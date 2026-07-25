@@ -1,4 +1,3 @@
-
 import argparse
 import logging
 import os
@@ -20,9 +19,7 @@ from build_tables import (  # noqa: E402
 )
 from utils import load_groups, write_workbook  # noqa: E402
 
-logging.basicConfig(
-    level=logging.INFO, format="%(levelname)s | %(name)s | %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(name)s | %(message)s")
 logger = logging.getLogger("07_01_cohort_description")
 
 
@@ -33,21 +30,25 @@ def _parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--output-dir", default=C.OUTPUT_DIR)
     p.add_argument("--workbook-name", default=C.OUTPUT_WORKBOOK_NAME)
     p.add_argument(
-        "--continuous-test", choices=["auto", "anova", "kruskal"],
+        "--continuous-test",
+        choices=["auto", "anova", "kruskal"],
         default=C.CONTINUOUS_TEST,
     )
     p.add_argument(
-        "--categorical-test", choices=["auto", "chi2", "fisher_mc"],
+        "--categorical-test",
+        choices=["auto", "chi2", "fisher_mc"],
         default=C.CATEGORICAL_TEST,
     )
     p.add_argument(
-        "--composite-pvalue", action=argparse.BooleanOptionalAction,
+        "--composite-pvalue",
+        action=argparse.BooleanOptionalAction,
         default=C.COMPUTE_COMPOSITE_PVALUE,
         help="Compute the composite-sarcopenia p-value for Table 1 "
         "(default on; use --no-composite-pvalue to leave the cell blank).",
     )
     p.add_argument(
-        "--no-methods-sheet", action="store_true",
+        "--no-methods-sheet",
+        action="store_true",
         help="Do not append the 'Statistical methods' sheet.",
     )
     return p.parse_args(argv)

@@ -74,9 +74,7 @@ def continuous_test(
 
 
 # Categorical
-def _monte_carlo_chi2(
-    table: np.ndarray, n_resamples: int, seed: int
-) -> float:
+def _monte_carlo_chi2(table: np.ndarray, n_resamples: int, seed: int) -> float:
     """Permutation p-value for an r x c contingency table.
 
     The group labels are permuted across all observations while the overall
@@ -160,6 +158,4 @@ def categorical_test(
         return StatResult(float(p), "Fisher exact", n_used)
 
     p = _monte_carlo_chi2(arr, n_resamples=n_resamples, seed=seed)
-    return StatResult(
-        float(p), f"Chi-square (Monte-Carlo, B={n_resamples})", n_used
-    )
+    return StatResult(float(p), f"Chi-square (Monte-Carlo, B={n_resamples})", n_used)

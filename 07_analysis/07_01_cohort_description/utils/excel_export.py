@@ -52,9 +52,7 @@ def _write_sheet(wb: Workbook, model: TableModel) -> None:
     ncols = model.ncols
 
     # --- title ----------------------------------------------------------- #
-    ws.merge_cells(
-        start_row=1, start_column=1, end_row=1, end_column=ncols
-    )
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=ncols)
     tcell = ws.cell(row=1, column=1, value=model.title)
     tcell.font = _TITLE_FONT
     tcell.alignment = _TOP_LEFT

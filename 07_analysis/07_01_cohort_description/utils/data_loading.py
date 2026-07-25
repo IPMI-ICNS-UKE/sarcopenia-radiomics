@@ -44,12 +44,20 @@ def load_groups(cfg, columns, gc) -> Dict[str, pd.DataFrame]:
     c1 = _coerce_numeric(
         c1,
         [
-            columns.age, columns.sex, columns.bmi,
-            columns.hand_grip_bin, columns.hand_grip_cont,
-            columns.chair_rise_bin, columns.chair_rise_cont,
-            columns.sarcopenia_composite, columns.test_temporal, columns.use,
-            columns.ecog, columns.tumor_type,
-            columns.primary_metastasized, columns.secondary_metastasized,
+            columns.age,
+            columns.sex,
+            columns.bmi,
+            columns.hand_grip_bin,
+            columns.hand_grip_cont,
+            columns.chair_rise_bin,
+            columns.chair_rise_cont,
+            columns.sarcopenia_composite,
+            columns.test_temporal,
+            columns.use,
+            columns.ecog,
+            columns.tumor_type,
+            columns.primary_metastasized,
+            columns.secondary_metastasized,
             columns.num_chem_cycles,
         ],
     )
@@ -69,18 +77,27 @@ def load_groups(cfg, columns, gc) -> Dict[str, pd.DataFrame]:
     c2 = _coerce_numeric(
         c2,
         [
-            columns.age, columns.sex, columns.bmi,
-            columns.hand_grip_bin, columns.hand_grip_cont,
-            columns.chair_rise_bin, columns.chair_rise_cont,
-            columns.sarcopenia_composite, columns.use,
-            columns.meld_score, columns.hcc, columns.listed_for_trans,
+            columns.age,
+            columns.sex,
+            columns.bmi,
+            columns.hand_grip_bin,
+            columns.hand_grip_cont,
+            columns.chair_rise_bin,
+            columns.chair_rise_cont,
+            columns.sarcopenia_composite,
+            columns.use,
+            columns.meld_score,
+            columns.hcc,
+            columns.listed_for_trans,
         ],
     )
     test2 = _filter_used(c2, columns.use, gc.use_flag_value)
 
     logger.info(
         "Group sizes - training: %d | test1: %d | test2: %d",
-        len(training), len(test1), len(test2),
+        len(training),
+        len(test1),
+        len(test2),
     )
 
     return {
