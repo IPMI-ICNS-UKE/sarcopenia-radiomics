@@ -51,7 +51,9 @@ class RunConfig:
             )
         if self.feature_columns is None:
             object.__setattr__(
-                self, "feature_columns", ("smi_3d", "mra_3d") if self.use_3d else ("smi_2d", "mra_2d")
+                self,
+                "feature_columns",
+                ("smi_3d", "mra_3d") if self.use_3d else ("smi_2d", "mra_2d"),
             )
 
 

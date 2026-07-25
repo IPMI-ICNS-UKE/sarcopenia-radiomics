@@ -20,7 +20,9 @@ from utils.plotting import (
 )
 
 
-def process_dataset(dataset_key: str, input_csv: Path, ground_truth_path: Path, all_test: bool, postfix: str) -> None:
+def process_dataset(
+    dataset_key: str, input_csv: Path, ground_truth_path: Path, all_test: bool, postfix: str
+) -> None:
     out_dir, tables_dir, plots_dir = ensure_output_dirs(RCFG.output_root)
     required = [*RCFG.id_columns, *RCFG.feature_columns]
     df = read_csv_checked(input_csv, required_columns=required)
@@ -42,20 +44,26 @@ def process_dataset(dataset_key: str, input_csv: Path, ground_truth_path: Path, 
         split_col=RCFG.split_col,
     )
 
-    result.df_all.to_csv(out_dir / add_postfix_to_filename(RCFG.filtered_features_filename, postfix), index=False)
+    result.df_all.to_csv(
+        out_dir / add_postfix_to_filename(RCFG.filtered_features_filename, postfix), index=False
+    )
 
     result.variance_summary.to_csv(
-        tables_dir / add_postfix_to_filename("variance_summary_baseline_ct.csv", postfix), index=False
+        tables_dir / add_postfix_to_filename("variance_summary_baseline_ct.csv", postfix),
+        index=False,
     )
     result.correlation_summary.to_csv(
-        tables_dir / add_postfix_to_filename("correlation_summary_baseline_ct.csv", postfix), index=False
+        tables_dir / add_postfix_to_filename("correlation_summary_baseline_ct.csv", postfix),
+        index=False,
     )
     result.overall_summary.to_csv(
-        tables_dir / add_postfix_to_filename("analysis_overall_summary_baseline_ct.csv", postfix), index=False
+        tables_dir / add_postfix_to_filename("analysis_overall_summary_baseline_ct.csv", postfix),
+        index=False,
     )
     if not result.corr_matrix_train.empty:
         result.corr_matrix_train.to_csv(
-            tables_dir / add_postfix_to_filename("spearman_corr_matrix_train_baseline_ct.csv", postfix)
+            tables_dir
+            / add_postfix_to_filename("spearman_corr_matrix_train_baseline_ct.csv", postfix)
         )
 
     if RCFG.make_plots:
@@ -63,7 +71,8 @@ def process_dataset(dataset_key: str, input_csv: Path, ground_truth_path: Path, 
         plot_feature_counts(
             [len(feature_cols), len(feature_cols)],
             ["Input\nfeatures", "Retained\nfeatures"],
-            plots_dir / add_postfix_to_filename("feature_counts_filtering_baseline_ct.png", postfix),
+            plots_dir
+            / add_postfix_to_filename("feature_counts_filtering_baseline_ct.png", postfix),
             title,
         )
         plot_variance_distribution(
@@ -78,15 +87,24 @@ def process_dataset(dataset_key: str, input_csv: Path, ground_truth_path: Path, 
             title,
         )
         if leaf is not None:
-            leaf.to_csv(tables_dir / add_postfix_to_filename("dendrogram_leaf_order_baseline_ct.csv", postfix), index=False)
+            leaf.to_csv(
+                tables_dir
+                / add_postfix_to_filename("dendrogram_leaf_order_baseline_ct.csv", postfix),
+                index=False,
+            )
         heat = plot_clustered_abs_spearman_heatmap(
             result.corr_matrix_train,
             RCFG.spearman_rho_threshold,
-            plots_dir / add_postfix_to_filename("clustered_abs_spearman_heatmap_baseline_ct.png", postfix),
+            plots_dir
+            / add_postfix_to_filename("clustered_abs_spearman_heatmap_baseline_ct.png", postfix),
             title,
         )
         if heat is not None:
-            heat.to_csv(tables_dir / add_postfix_to_filename("clustered_heatmap_order_baseline_ct.csv", postfix), index=False)
+            heat.to_csv(
+                tables_dir
+                / add_postfix_to_filename("clustered_heatmap_order_baseline_ct.csv", postfix),
+                index=False,
+            )
 
     print("=" * 80)
     print(f"Processed 04_01_conventional_ct: {dataset_key}")

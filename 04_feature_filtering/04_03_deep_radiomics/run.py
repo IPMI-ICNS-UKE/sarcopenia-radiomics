@@ -39,8 +39,12 @@ def process_map(map_name: str) -> pd.DataFrame:
     stable_c1, stable_c2, out_dir = build_map_paths(map_name)
     out_dir, tables_dir, plots_dir = ensure_output_dirs(out_dir)
 
-    gt_c1 = load_ground_truth_with_split(RCFG.ground_truth_path_cohort_1, RCFG.patient_id_col_gt, RCFG.test_flag_col_gt)
-    gt_c2 = load_ground_truth_with_split(RCFG.ground_truth_path_cohort_2, RCFG.patient_id_col_gt, all_test=True)
+    gt_c1 = load_ground_truth_with_split(
+        RCFG.ground_truth_path_cohort_1, RCFG.patient_id_col_gt, RCFG.test_flag_col_gt
+    )
+    gt_c2 = load_ground_truth_with_split(
+        RCFG.ground_truth_path_cohort_2, RCFG.patient_id_col_gt, all_test=True
+    )
 
     df_c1 = read_csv_checked(stable_c1, required_columns=[RCFG.patient_id_col_data])
     df_c2 = read_csv_checked(stable_c2, required_columns=[RCFG.patient_id_col_data])
@@ -69,13 +73,23 @@ def process_map(map_name: str) -> pd.DataFrame:
         dataset_name=f"{map_name}_cohort_2",
     )
 
-    result.df_all.to_csv(out_dir / RCFG.filtered_features_pattern.format(map_name=map_name), index=False)
-    result_c2.df_all.to_csv(out_dir / RCFG.filtered_features_pattern_cohort_2.format(map_name=map_name), index=False)
+    result.df_all.to_csv(
+        out_dir / RCFG.filtered_features_pattern.format(map_name=map_name), index=False
+    )
+    result_c2.df_all.to_csv(
+        out_dir / RCFG.filtered_features_pattern_cohort_2.format(map_name=map_name), index=False
+    )
 
     result.variance_summary.to_csv(tables_dir / f"variance_summary_{map_name}.csv", index=False)
-    result.correlation_summary.to_csv(tables_dir / f"correlation_clustering_summary_qc_{map_name}.csv", index=False)
-    result.overall_summary.to_csv(tables_dir / f"analysis_overall_summary_{map_name}.csv", index=False)
-    pd.DataFrame({"retained_feature": feature_cols}).to_csv(tables_dir / f"retained_feature_list_{map_name}.csv", index=False)
+    result.correlation_summary.to_csv(
+        tables_dir / f"correlation_clustering_summary_qc_{map_name}.csv", index=False
+    )
+    result.overall_summary.to_csv(
+        tables_dir / f"analysis_overall_summary_{map_name}.csv", index=False
+    )
+    pd.DataFrame({"retained_feature": feature_cols}).to_csv(
+        tables_dir / f"retained_feature_list_{map_name}.csv", index=False
+    )
     if not result.corr_matrix_train.empty:
         result.corr_matrix_train.to_csv(tables_dir / f"spearman_corr_matrix_train_{map_name}.csv")
 
@@ -86,7 +100,9 @@ def process_map(map_name: str) -> pd.DataFrame:
             plots_dir / f"feature_counts_filtering_{map_name}.png",
             map_name,
         )
-        plot_variance_distribution(result.variance_summary, plots_dir / f"variance_distribution_{map_name}.png", map_name)
+        plot_variance_distribution(
+            result.variance_summary, plots_dir / f"variance_distribution_{map_name}.png", map_name
+        )
         leaf = plot_spearman_dendrogram(
             result.corr_matrix_train,
             RCFG.spearman_rho_threshold_qc,
@@ -115,7 +131,9 @@ def main() -> None:
     summaries = [process_map(m) for m in RCFG.map_names]
     if summaries:
         RCFG.output_root.mkdir(parents=True, exist_ok=True)
-        pd.concat(summaries, axis=0, ignore_index=True).to_csv(RCFG.output_root / "analysis_summary_all_maps.csv", index=False)
+        pd.concat(summaries, axis=0, ignore_index=True).to_csv(
+            RCFG.output_root / "analysis_summary_all_maps.csv", index=False
+        )
 
 
 if __name__ == "__main__":

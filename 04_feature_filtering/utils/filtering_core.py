@@ -64,16 +64,20 @@ def near_zero_variance_filter(
                 "n_unique_train": nunique,
                 "keep_after_nzv": keep,
                 "drop_reason_nzv": (
-                    "low_variance" if variance <= variance_threshold
-                    else "low_unique_values" if nunique < min_unique_values
-                    else ""
+                    "low_variance"
+                    if variance <= variance_threshold
+                    else "low_unique_values" if nunique < min_unique_values else ""
                 ),
             }
         )
-    summary = pd.DataFrame(rows).sort_values(
-        by=["keep_after_nzv", "variance_train", "n_unique_train", "feature"],
-        ascending=[True, True, True, True],
-    ).reset_index(drop=True)
+    summary = (
+        pd.DataFrame(rows)
+        .sort_values(
+            by=["keep_after_nzv", "variance_train", "n_unique_train", "feature"],
+            ascending=[True, True, True, True],
+        )
+        .reset_index(drop=True)
+    )
     kept = summary.loc[summary["keep_after_nzv"], "feature"].tolist()
     removed = summary.loc[~summary["keep_after_nzv"], "feature"].tolist()
     return kept, removed, summary
@@ -93,15 +97,19 @@ def correlation_clustering_summary(
     corr_abs = corr.abs().clip(lower=0.0, upper=1.0)
 
     if len(features) == 1:
-        summary = pd.DataFrame([{
-            "feature": features[0],
-            "cluster_id": 1,
-            "cluster_size": 1,
-            "mean_abs_spearman_to_others": 1.0,
-            "is_representative": True,
-            "representative_feature": features[0],
-            "abs_spearman_to_representative": 1.0,
-        }])
+        summary = pd.DataFrame(
+            [
+                {
+                    "feature": features[0],
+                    "cluster_id": 1,
+                    "cluster_size": 1,
+                    "mean_abs_spearman_to_others": 1.0,
+                    "is_representative": True,
+                    "representative_feature": features[0],
+                    "abs_spearman_to_representative": 1.0,
+                }
+            ]
+        )
         return features, [], summary, corr_abs
 
     dist = 1.0 - corr_abs
@@ -117,7 +125,12 @@ def correlation_clustering_summary(
     ]
 
     if not use_representatives:
-        return features, [], base.sort_values(["cluster_id", "feature"]).reset_index(drop=True), corr_abs
+        return (
+            features,
+            [],
+            base.sort_values(["cluster_id", "feature"]).reset_index(drop=True),
+            corr_abs,
+        )
 
     icc_map = {}
     if df_stability is not None and {"feature", "mean_train_icc"}.issubset(df_stability.columns):
@@ -140,27 +153,37 @@ def correlation_clustering_summary(
 
         for _, row in df_cluster.iterrows():
             feat = row["feature"]
-            rows.append({
-                "feature": feat,
-                "cluster_id": int(cluster_id),
-                "cluster_size": int(row["cluster_size"]),
-                "mean_abs_spearman_to_others": float(row["mean_abs_spearman_to_others"]),
-                "mean_train_icc": float(row["mean_train_icc"]) if pd.notna(row["mean_train_icc"]) else np.nan,
-                "variance_train": float(row["variance_train"]),
-                "is_representative": bool(feat == representative),
-                "representative_feature": representative,
-                "abs_spearman_to_representative": float(corr_abs.loc[feat, representative]),
-            })
+            rows.append(
+                {
+                    "feature": feat,
+                    "cluster_id": int(cluster_id),
+                    "cluster_size": int(row["cluster_size"]),
+                    "mean_abs_spearman_to_others": float(row["mean_abs_spearman_to_others"]),
+                    "mean_train_icc": (
+                        float(row["mean_train_icc"]) if pd.notna(row["mean_train_icc"]) else np.nan
+                    ),
+                    "variance_train": float(row["variance_train"]),
+                    "is_representative": bool(feat == representative),
+                    "representative_feature": representative,
+                    "abs_spearman_to_representative": float(corr_abs.loc[feat, representative]),
+                }
+            )
 
-    summary = pd.DataFrame(rows).sort_values(
-        by=["cluster_id", "is_representative", "feature"],
-        ascending=[True, False, True],
-    ).reset_index(drop=True)
+    summary = (
+        pd.DataFrame(rows)
+        .sort_values(
+            by=["cluster_id", "is_representative", "feature"],
+            ascending=[True, False, True],
+        )
+        .reset_index(drop=True)
+    )
     removed = [f for f in features if f not in selected]
     return selected, removed, summary, corr_abs
 
 
-def subset_with_ids(df: pd.DataFrame, id_columns: List[str], feature_cols: List[str]) -> pd.DataFrame:
+def subset_with_ids(
+    df: pd.DataFrame, id_columns: List[str], feature_cols: List[str]
+) -> pd.DataFrame:
     return df.loc[:, [c for c in id_columns if c in df.columns] + feature_cols].copy()
 
 
@@ -172,8 +195,16 @@ def run_analysis_only_pipeline(
     dataset_name: str,
     split_col: str = "split",
 ) -> AnalysisResult:
-    df_train = df_all[df_all[split_col] == "train"].reset_index(drop=True) if split_col in df_all.columns else pd.DataFrame()
-    df_test = df_all[df_all[split_col] == "test"].reset_index(drop=True) if split_col in df_all.columns else pd.DataFrame()
+    df_train = (
+        df_all[df_all[split_col] == "train"].reset_index(drop=True)
+        if split_col in df_all.columns
+        else pd.DataFrame()
+    )
+    df_test = (
+        df_all[df_all[split_col] == "test"].reset_index(drop=True)
+        if split_col in df_all.columns
+        else pd.DataFrame()
+    )
     analysis_df = df_train if not df_train.empty else df_all
     analysis_split = "train" if not df_train.empty else "all"
 
@@ -185,26 +216,36 @@ def run_analysis_only_pipeline(
         use_representatives=False,
     )
 
-    overall = pd.DataFrame([{
-        "dataset_name": dataset_name,
-        "analysis_split": analysis_split,
-        "n_rows_train": int(len(df_train)),
-        "n_rows_test": int(len(df_test)),
-        "n_initial_features": int(len(feature_cols)),
-        "n_after_analysis": int(len(feature_cols)),
-        "n_removed_features": 0,
-        "spearman_rho_threshold_for_clustering": float(rho_threshold),
-        "n_correlation_clusters": int(corr_summary["cluster_id"].nunique()) if not corr_summary.empty else 0,
-    }])
+    overall = pd.DataFrame(
+        [
+            {
+                "dataset_name": dataset_name,
+                "analysis_split": analysis_split,
+                "n_rows_train": int(len(df_train)),
+                "n_rows_test": int(len(df_test)),
+                "n_initial_features": int(len(feature_cols)),
+                "n_after_analysis": int(len(feature_cols)),
+                "n_removed_features": 0,
+                "spearman_rho_threshold_for_clustering": float(rho_threshold),
+                "n_correlation_clusters": (
+                    int(corr_summary["cluster_id"].nunique()) if not corr_summary.empty else 0
+                ),
+            }
+        ]
+    )
 
     empty_cols = [*id_columns, *feature_cols]
     return AnalysisResult(
         df_all=subset_with_ids(df_all, id_columns, feature_cols),
         df_train=(
-            subset_with_ids(df_train, id_columns, feature_cols) if not df_train.empty else pd.DataFrame(columns=empty_cols)
+            subset_with_ids(df_train, id_columns, feature_cols)
+            if not df_train.empty
+            else pd.DataFrame(columns=empty_cols)
         ),
         df_test=(
-            subset_with_ids(df_test, id_columns, feature_cols) if not df_test.empty else pd.DataFrame(columns=empty_cols)
+            subset_with_ids(df_test, id_columns, feature_cols)
+            if not df_test.empty
+            else pd.DataFrame(columns=empty_cols)
         ),
         selected_features=feature_cols,
         removed_features=[],
@@ -228,7 +269,9 @@ def run_spectral_filtering_pipeline(
 ) -> AnalysisResult:
     df_train = df_all[df_all[split_col] == "train"].copy()
     if df_train.empty:
-        raise ValueError(f"No training cases found for map '{map_name}'. Filtering must be learned on cohort 1 training data.")
+        raise ValueError(
+            f"No training cases found for map '{map_name}'. Filtering must be learned on cohort 1 training data."
+        )
     df_test = df_all[df_all[split_col] == "test"].copy()
     X_train = df_train[feature_cols].apply(pd.to_numeric, errors="coerce")
 
@@ -244,18 +287,22 @@ def run_spectral_filtering_pipeline(
         use_representatives=True,
     )
 
-    overall = pd.DataFrame([{
-        "map_name": map_name,
-        "n_train_cases_used_for_filtering": int(len(df_train)),
-        "n_initial_stable_features": int(len(feature_cols)),
-        "n_after_nzv": int(len(kept_nzv)),
-        "n_after_correlation_filtering": int(len(selected)),
-        "n_removed_nzv": int(len(removed_nzv)),
-        "n_removed_correlation": int(len(removed_corr)),
-        "variance_threshold": float(variance_threshold),
-        "min_unique_values": int(min_unique_values),
-        "spearman_rho_threshold": float(rho_threshold),
-    }])
+    overall = pd.DataFrame(
+        [
+            {
+                "map_name": map_name,
+                "n_train_cases_used_for_filtering": int(len(df_train)),
+                "n_initial_stable_features": int(len(feature_cols)),
+                "n_after_nzv": int(len(kept_nzv)),
+                "n_after_correlation_filtering": int(len(selected)),
+                "n_removed_nzv": int(len(removed_nzv)),
+                "n_removed_correlation": int(len(removed_corr)),
+                "variance_threshold": float(variance_threshold),
+                "min_unique_values": int(min_unique_values),
+                "spearman_rho_threshold": float(rho_threshold),
+            }
+        ]
+    )
 
     return AnalysisResult(
         df_all=subset_with_ids(df_all, id_columns, selected),

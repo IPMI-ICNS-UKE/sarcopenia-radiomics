@@ -24,8 +24,7 @@ Redundancy Filtering"), applied to the stable features produced by
      `spearman_rho_threshold = 0.90`; within each cluster the representative
      feature is the one with the highest stability ICC (from
      `03_02_spectral_radiomics`'s `stability_summary_all_features_{map}.csv`),
-     ties broken by training-set variance, then alphabetically — matching
-     Appendix S5 exactly.
+     ties broken by training-set variance, then alphabetically.
 - **`04_03_deep_radiomics`**: no embedding dimensions are removed (used
   unfiltered, matching the main text). Variance and Spearman-correlation QC
   are computed and saved per map, and the stable embeddings are copied

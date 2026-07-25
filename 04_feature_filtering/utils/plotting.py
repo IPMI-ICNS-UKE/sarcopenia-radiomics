@@ -21,7 +21,11 @@ def plot_variance_distribution(
         return
     plt.figure(figsize=(8, 5))
     if len(vals) <= 20:
-        labels = variance_summary.loc[variance_summary[variance_column].notna(), "feature"].astype(str).tolist()
+        labels = (
+            variance_summary.loc[variance_summary[variance_column].notna(), "feature"]
+            .astype(str)
+            .tolist()
+        )
         plt.bar(labels, vals)
         plt.xticks(rotation=90, fontsize=7)
         plt.ylabel("Training variance")
@@ -47,7 +51,13 @@ def plot_feature_counts(
     plt.figure(figsize=(7, 5))
     bars = plt.bar(labels, counts)
     for bar, count in zip(bars, counts):
-        plt.text(bar.get_x() + bar.get_width() / 2.0, bar.get_height(), str(count), ha="center", va="bottom")
+        plt.text(
+            bar.get_x() + bar.get_width() / 2.0,
+            bar.get_height(),
+            str(count),
+            ha="center",
+            va="bottom",
+        )
     plt.ylabel("Number of features")
     plt.title(f"Feature filtering summary — {title_name}")
     plt.tight_layout()
@@ -61,7 +71,9 @@ def _compute_linkage(corr_abs: pd.DataFrame) -> np.ndarray:
     return linkage(squareform(dist.values, checks=False), method="average")
 
 
-def compute_feature_clustering(corr_abs: pd.DataFrame, rho_threshold: float) -> Tuple[np.ndarray, list[str], np.ndarray]:
+def compute_feature_clustering(
+    corr_abs: pd.DataFrame, rho_threshold: float
+) -> Tuple[np.ndarray, list[str], np.ndarray]:
     if corr_abs.empty:
         return np.empty((0, 4)), [], np.array([])
     features = corr_abs.index.tolist()
@@ -96,11 +108,13 @@ def plot_spearman_dendrogram(
 
     z, ordered, cluster_ids = compute_feature_clustering(corr_abs, rho_threshold)
     cluster_map = dict(zip(features, cluster_ids))
-    leaf_table = pd.DataFrame({
-        "leaf_order": np.arange(1, len(ordered) + 1),
-        "feature": ordered,
-        "cluster_id": [int(cluster_map[f]) for f in ordered],
-    })
+    leaf_table = pd.DataFrame(
+        {
+            "leaf_order": np.arange(1, len(ordered) + 1),
+            "feature": ordered,
+            "cluster_id": [int(cluster_map[f]) for f in ordered],
+        }
+    )
 
     n = len(features)
     labels = features if force_labels else (features if n <= 120 else None)
@@ -114,7 +128,12 @@ def plot_spearman_dendrogram(
         color_threshold=1.0 - rho_threshold,
         above_threshold_color="black",
     )
-    plt.axhline(1.0 - rho_threshold, linestyle="--", linewidth=1.2, label=f"Cut: |rho| >= {rho_threshold:.2f}")
+    plt.axhline(
+        1.0 - rho_threshold,
+        linestyle="--",
+        linewidth=1.2,
+        label=f"Cut: |rho| >= {rho_threshold:.2f}",
+    )
     plt.ylabel("Distance = 1 - |Spearman rho|")
     plt.xlabel("Features")
     plt.title(f"Spearman feature dendrogram — {title_name}")
@@ -143,11 +162,13 @@ def plot_clustered_abs_spearman_heatmap(
     else:
         _, ordered, cluster_ids = compute_feature_clustering(corr_abs, rho_threshold)
         cluster_map = dict(zip(features, cluster_ids))
-        table = pd.DataFrame({
-            "plot_order": np.arange(1, len(ordered) + 1),
-            "feature": ordered,
-            "cluster_id": [int(cluster_map[f]) for f in ordered],
-        })
+        table = pd.DataFrame(
+            {
+                "plot_order": np.arange(1, len(ordered) + 1),
+                "feature": ordered,
+                "cluster_id": [int(cluster_map[f]) for f in ordered],
+            }
+        )
         plot_features = ordered[:max_features_for_plot]
         mat = corr_abs.loc[plot_features, plot_features].values
         plot_cluster_ids = [int(cluster_map[f]) for f in plot_features]
@@ -170,7 +191,9 @@ def plot_clustered_abs_spearman_heatmap(
             plt.axvline(pos, linewidth=0.8)
 
     if len(features) > max_features_for_plot:
-        plt.xlabel(f"Showing first {max_features_for_plot} features in dendrogram order of {len(features)}")
+        plt.xlabel(
+            f"Showing first {max_features_for_plot} features in dendrogram order of {len(features)}"
+        )
     plt.tight_layout()
     plt.savefig(out_path, dpi=200, bbox_inches="tight")
     plt.close()

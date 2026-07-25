@@ -55,7 +55,9 @@ def attach_split_labels(
     )
     missing_split = int(merged["split"].isna().sum())
     if missing_split:
-        examples = merged.loc[merged["split"].isna(), patient_id_col_data].astype(str).head(10).tolist()
+        examples = (
+            merged.loc[merged["split"].isna(), patient_id_col_data].astype(str).head(10).tolist()
+        )
         raise ValueError(
             f"{missing_split} patients from feature table were not found in ground truth. "
             f"Examples: {examples}"
