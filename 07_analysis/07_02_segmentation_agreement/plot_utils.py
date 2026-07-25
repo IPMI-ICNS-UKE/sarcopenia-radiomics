@@ -54,7 +54,9 @@ def plot_agreement_boxplot(
     for pos, label in zip(positions, pair_order):
         vals = per_patient_df.loc[per_patient_df["pair"] == label, "dice"].dropna().to_numpy()
         xs = pos + rng.uniform(-0.15, 0.15, size=len(vals))
-        ax.scatter(xs, vals, s=35, alpha=0.85, color="#2f6690", edgecolor="white", linewidth=0.6, zorder=3)
+        ax.scatter(
+            xs, vals, s=35, alpha=0.85, color="#2f6690", edgecolor="white", linewidth=0.6, zorder=3
+        )
 
     ax.set_xticks(positions)
     ax.set_xticklabels(

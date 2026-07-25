@@ -38,5 +38,6 @@ def main() -> None:
 
     print(f"\nDone. All outputs saved to:\n  {config.OUTPUT_DIR}")
 
+
 if __name__ == "__main__":
     main()

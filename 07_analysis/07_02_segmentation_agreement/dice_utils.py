@@ -33,30 +33,27 @@ def compute_per_level_dice(patient_masks: Dict[str, MaskByLevel]) -> pd.DataFram
             masks = by_level[level]
             for key_a, key_b, pair_label in config.PAIRS:
                 dice = dice_coefficient(masks[key_a], masks[key_b])
-                rows.append({
-                    "patient_id": patient_id,
-                    "level": level,
-                    "pair": pair_label,
-                    "dice": dice,
-                })
+                rows.append(
+                    {
+                        "patient_id": patient_id,
+                        "level": level,
+                        "pair": pair_label,
+                        "dice": dice,
+                    }
+                )
     return pd.DataFrame(rows)
 
 
 def aggregate_per_patient(per_level_df: pd.DataFrame) -> pd.DataFrame:
     """Average the 3 level-specific Dice coefficients within each participant."""
-    return (
-        per_level_df
-        .groupby(["patient_id", "pair"], as_index=False)["dice"]
-        .mean()
-    )
+    return per_level_df.groupby(["patient_id", "pair"], as_index=False)["dice"].mean()
 
 
 def summarize_across_patients(per_patient_df: pd.DataFrame) -> pd.DataFrame:
     """Mean ± SD and median [IQR] of the per-patient Dice, across participants, per pair."""
     pair_order = [label for _, _, label in config.PAIRS]
     summary = (
-        per_patient_df
-        .groupby("pair")["dice"]
+        per_patient_df.groupby("pair")["dice"]
         .agg(
             mean_dice="mean",
             sd_dice="std",

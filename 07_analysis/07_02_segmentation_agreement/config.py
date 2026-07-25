@@ -8,13 +8,13 @@ if str(FEATURE_EXTRACTION_UTILS_DIR) not in sys.path:
 
 from common_config import COHORT1, CommonRunConfig  # noqa: E402
 
-# ─── Cohort / run config ───────────────────────────────────────────────────────
+# Cohort / run config
 # Only cohort 1 has manual reader annotations (manual_annotation == 1).
 
 COHORT_CFG = COHORT1
 RUN_CFG = CommonRunConfig()
 
-# ─── Vertebral levels and reader/automated identifiers ─────────────────────────
+# Vertebral levels and reader/automated identifiers
 # Matches the (mask_name, level, slice_index, mask_2d) triplets produced by
 # manual_and_model_masksets(): "i_*" = Reader 1 (Isabel), "j_*" = Reader 2
 # (Jenni), "a_*" = automated segmentation.
@@ -25,7 +25,7 @@ READER_1 = "i"
 READER_2 = "j"
 AUTOMATED = "a"
 
-# ─── Pairwise comparisons to report ────────────────────────────────────────────
+# Pairwise comparisons to report
 # (key_a, key_b, display_label)
 
 PAIRS = (
@@ -34,7 +34,7 @@ PAIRS = (
     (READER_2, AUTOMATED, "Reader 2 vs Automated"),
 )
 
-# ─── Output ─────────────────────────────────────────────────────────────────────
+# Output
 
 REPO_ROOT = THIS_DIR.parent.parent
 OUTPUT_ROOT = str(REPO_ROOT / "output")
@@ -47,5 +47,5 @@ SUMMARY_CSV = "segmentation_agreement_summary.csv"
 FIGURE_FILE = "segmentation_agreement_boxplot.png"
 
 FIGURE_DPI = 300
-FIGURE_SIZE = (8.0, 5.5)   # inches (width, height)
+FIGURE_SIZE = (8.0, 5.5)  # inches (width, height)
 FONT_SIZE = 11

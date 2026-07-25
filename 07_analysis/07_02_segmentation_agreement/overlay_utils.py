@@ -49,8 +49,8 @@ def plot_segmentation_overlay(
     mask_arrays = {r: sitk.GetArrayFromImage(m).astype(np.uint8) for r, m in masks_by_rater.items()}
 
     r0, r1, c0, c1 = _crop_bbox(list(mask_arrays.values()), margin=margin_px)
-    ct_crop = ct_arr[r0:r1 + 1, c0:c1 + 1]
-    mask_crop = {r: arr[r0:r1 + 1, c0:c1 + 1] for r, arr in mask_arrays.items()}
+    ct_crop = ct_arr[r0 : r1 + 1, c0 : c1 + 1]
+    mask_crop = {r: arr[r0 : r1 + 1, c0 : c1 + 1] for r, arr in mask_arrays.items()}
 
     vmin = window_center - window_width / 2
     vmax = window_center + window_width / 2

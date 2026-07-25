@@ -38,7 +38,9 @@ def main() -> None:
             output_path = os.path.join(
                 config.OUTPUT_DIR, f"segmentation_overlay_{tag}_{patient_id}_{level}.png"
             )
-            plot_segmentation_overlay(patient_id, level, ct_2d, masks_by_rater, output_path=output_path)
+            plot_segmentation_overlay(
+                patient_id, level, ct_2d, masks_by_rater, output_path=output_path
+            )
 
 
 if __name__ == "__main__":
