@@ -44,9 +44,7 @@ def plot_roc_interactive(
         Full path for the output HTML file (must end in .html).
     """
     style_map = {
-        m: (PALETTE[i], LINE_STYLES[i])
-        for i, m in enumerate(MODEL_ORDER)
-        if i < len(PALETTE)
+        m: (PALETTE[i], LINE_STYLES[i]) for i, m in enumerate(MODEL_ORDER) if i < len(PALETTE)
     }
 
     fig = go.Figure()
@@ -74,7 +72,10 @@ def plot_roc_interactive(
     # Reference diagonal
     fig.add_shape(
         type="line",
-        x0=0, y0=0, x1=1, y1=1,
+        x0=0,
+        y0=0,
+        x1=1,
+        y1=1,
         line=dict(color="#bbbbbb", dash="dash", width=1.0),
     )
 

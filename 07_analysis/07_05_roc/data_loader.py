@@ -7,7 +7,8 @@ import pandas as pd
 from config import MODEL_SOURCES, OUTPUT_ROOT, SPLITS
 
 
-# ─── Internal helpers ─────────────────────────────────────────────────────────
+# Internal helpers
+
 
 def _metrics_path(subfolder: str, filename: str) -> str:
     return os.path.join(OUTPUT_ROOT, subfolder, "metrics", filename)
@@ -30,7 +31,8 @@ def _parse_ci95(ci_str: str) -> Tuple[Optional[float], Optional[float]]:
         return None, None
 
 
-# ─── Public API ───────────────────────────────────────────────────────────────
+# Public API
+
 
 def load_metrics_for_split(split_key: str) -> pd.DataFrame:
     """
@@ -53,9 +55,7 @@ def load_metrics_for_split(split_key: str) -> pd.DataFrame:
         for model_name in model_names:
             row = df[df["model_name"] == model_name]
             if row.empty:
-                warnings.warn(
-                    f"Model '{model_name}' not found in {path}. Skipping."
-                )
+                warnings.warn(f"Model '{model_name}' not found in {path}. Skipping.")
                 continue
 
             row = row.iloc[0]
@@ -97,25 +97,19 @@ def load_predictions_for_split(split_key: str) -> pd.DataFrame:
         for model_name in model_names:
             sub = df[df["model_name"] == model_name].copy()
             if sub.empty:
-                warnings.warn(
-                    f"Model '{model_name}' not found in {path}. Skipping."
-                )
+                warnings.warn(f"Model '{model_name}' not found in {path}. Skipping.")
                 continue
 
             required_cols = {"patient_id", "target", "pred_score", "model_name"}
             missing = required_cols - set(sub.columns)
             if missing:
-                warnings.warn(
-                    f"Missing columns {missing} in {path}. Skipping model."
-                )
+                warnings.warn(f"Missing columns {missing} in {path}. Skipping model.")
                 continue
 
             frames.append(sub[list(required_cols)])
 
     if not frames:
-        return pd.DataFrame(
-            columns=["model_name", "patient_id", "target", "pred_score"]
-        )
+        return pd.DataFrame(columns=["model_name", "patient_id", "target", "pred_score"])
 
     return pd.concat(frames, ignore_index=True)
 

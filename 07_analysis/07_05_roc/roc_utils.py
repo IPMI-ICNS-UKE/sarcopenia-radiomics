@@ -58,9 +58,7 @@ def compute_roc_curves(
     """
     roc_list: List[RocData] = []
 
-    metrics_indexed = (
-        metrics_df.set_index("model_name") if not metrics_df.empty else pd.DataFrame()
-    )
+    metrics_indexed = metrics_df.set_index("model_name") if not metrics_df.empty else pd.DataFrame()
 
     for model_name in model_order:
         sub = predictions_df[predictions_df["model_name"] == model_name]
@@ -78,10 +76,7 @@ def compute_roc_curves(
 
         # Pull AUC and CI from pre-computed metrics if available; otherwise
         # fall back to sklearn (no CI).
-        if (
-            not metrics_indexed.empty
-            and model_name in metrics_indexed.index
-        ):
+        if not metrics_indexed.empty and model_name in metrics_indexed.index:
             row = metrics_indexed.loc[model_name]
             auc = float(row["AUC"])
             auc_lo = row.get("AUC_lo", None)
@@ -90,6 +85,7 @@ def compute_roc_curves(
             auc_hi = float(auc_hi) if auc_hi is not None and not pd.isna(auc_hi) else None
         else:
             from sklearn.metrics import roc_auc_score
+
             auc = float(roc_auc_score(y_true, y_score))
             auc_lo = None
             auc_hi = None

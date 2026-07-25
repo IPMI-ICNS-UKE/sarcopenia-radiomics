@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import seaborn as sns
 
-matplotlib.rcParams["pdf.fonttype"] = 42   # editable fonts in PDF/AI
+matplotlib.rcParams["pdf.fonttype"] = 42  # editable fonts in PDF/AI
 matplotlib.rcParams["ps.fonttype"] = 42
 
 from config import (
@@ -55,9 +55,7 @@ def plot_roc_static(
     """
     # Build a lookup from model_name → (colour, linestyle) in ORDER
     style_map = {
-        m: (PALETTE[i], LINE_STYLES[i])
-        for i, m in enumerate(MODEL_ORDER)
-        if i < len(PALETTE)
+        m: (PALETTE[i], LINE_STYLES[i]) for i, m in enumerate(MODEL_ORDER) if i < len(PALETTE)
     }
 
     fig, ax = plt.subplots(figsize=FIGURE_SIZE_IN, dpi=DPI)

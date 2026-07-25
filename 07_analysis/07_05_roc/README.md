@@ -5,16 +5,6 @@ impairment — both a publication-ready static PNG (300 dpi) and a
 self-contained interactive HTML per data split. Reproduces Figure 3A–C of
 the manuscript.
 
-## What it produces (in `output/07_05_roc/`)
-
-- `ROC_train.png` / `ROC_train.html`
-- `ROC_test_1.png` / `ROC_test_1.html`
-- `ROC_test_2.png` / `ROC_test_2.html`
-
-Each figure overlays 6 curves: 2D SMI, 2D MRA, 3D SMI, 3D MRA, 3D muscle-fat
-mean fraction, and the 3D handcrafted-radiomics (CT + muscle fat) model —
-matching Figure 3's caption exactly.
-
 ## Layout
 
 | File | Role |
@@ -25,3 +15,27 @@ matching Figure 3's caption exactly.
 | `plot_roc_static.py` | Matplotlib/seaborn static PNG, Radiology-journal styling (Arial, 300 dpi, single-column width, distinguishable in greyscale). |
 | `plot_roc_interactive.py` | Plotly interactive HTML with per-point hover tooltips. |
 | `run.py` | Orchestrates both outputs for all three splits. |
+
+## Running
+
+```bash
+python run.py
+```
+
+## Output layout
+
+`output/07_05_roc/`:
+
+- `ROC_train.png` / `ROC_train.html`
+- `ROC_test_1.png` / `ROC_test_1.html`
+- `ROC_test_2.png` / `ROC_test_2.html`
+
+Each figure overlays 6 curves: 2D SMI, 2D MRA, 3D SMI, 3D MRA, 3D muscle-fat
+mean fraction, and the 3D handcrafted-radiomics (CT + muscle fat) model —
+matching Figure 3's caption exactly.
+
+## Notes
+
+- ROC curves are computed from `pred_score` (raw decision score) rather than
+  `pred_proba` — no effect on curve shape or AUC, since calibration is a
+  monotonic transform and ROC/AUC depend only on rank order.
