@@ -27,7 +27,7 @@ class RunConfig:
         "status",
         "mask",
     )
-    keep_id_cols_in_stable_table: Tuple[str, ...] = ("patient_id", )
+    keep_id_cols_in_stable_table: Tuple[str, ...] = ("patient_id",)
 
     simulated_masks: Tuple[str, ...] = (
         "a_original",
@@ -82,7 +82,9 @@ class RunConfig:
                 stage_out_dir / f"raw_deep_radiomics_cohort_2{suffix}.csv",
             )
         if self.output_dir is None:
-            object.__setattr__(self, "output_dir", REPO_ROOT / "output" / f"03_03_deep_radiomics{suffix}")
+            object.__setattr__(
+                self, "output_dir", REPO_ROOT / "output" / f"03_03_deep_radiomics{suffix}"
+            )
 
 
 RCFG = RunConfig()

@@ -180,11 +180,7 @@ def plot_icc_histogram(
     if icc_df is None or icc_df.empty:
         return
 
-    values = (
-        pd.to_numeric(icc_df[value_col], errors="coerce")
-        .dropna()
-        .to_numpy(dtype=float)
-    )
+    values = pd.to_numeric(icc_df[value_col], errors="coerce").dropna().to_numpy(dtype=float)
     if values.size == 0:
         return
 
@@ -193,10 +189,7 @@ def plot_icc_histogram(
     n_total = int(values.size)
     n_robust = int(np.sum(values > threshold))
 
-    legend_label = (
-        f"Threshold = {threshold:.2f}\n"
-        f"Robust features: {n_robust} / {n_total}"
-    )
+    legend_label = f"Threshold = {threshold:.2f}\n" f"Robust features: {n_robust} / {n_total}"
 
     with sns.axes_style("whitegrid"), sns.plotting_context("paper", font_scale=1.15):
         fig, ax = plt.subplots(figsize=(6.5, 4.2))

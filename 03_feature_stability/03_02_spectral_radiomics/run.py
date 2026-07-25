@@ -90,10 +90,20 @@ def run_one_map_type(
         by_level=False,
     )
 
-    save_csv(icc_sim_train, tables_dir / f"icc_simulated_masks_{RCFG.train_split_name}_{map_slug}.csv")
-    save_csv(icc_sim_test, tables_dir / f"icc_simulated_masks_{RCFG.temporal_test_split_name}_{map_slug}.csv")
-    save_csv(icc_manual_train, tables_dir / f"icc_manual_vs_model_{RCFG.train_split_name}_{map_slug}.csv")
-    save_csv(icc_manual_test, tables_dir / f"icc_manual_vs_model_{RCFG.temporal_test_split_name}_{map_slug}.csv")
+    save_csv(
+        icc_sim_train, tables_dir / f"icc_simulated_masks_{RCFG.train_split_name}_{map_slug}.csv"
+    )
+    save_csv(
+        icc_sim_test,
+        tables_dir / f"icc_simulated_masks_{RCFG.temporal_test_split_name}_{map_slug}.csv",
+    )
+    save_csv(
+        icc_manual_train, tables_dir / f"icc_manual_vs_model_{RCFG.train_split_name}_{map_slug}.csv"
+    )
+    save_csv(
+        icc_manual_test,
+        tables_dir / f"icc_manual_vs_model_{RCFG.temporal_test_split_name}_{map_slug}.csv",
+    )
 
     icc_sim_cohort2 = pd.DataFrame()
     if df_cohort2 is not None and not df_cohort2.empty:
@@ -106,7 +116,8 @@ def run_one_map_type(
         )
         save_csv(
             icc_sim_cohort2,
-            tables_dir / f"icc_simulated_masks_{RCFG.external_test_split_name}_{map_slug}_cohort_2.csv",
+            tables_dir
+            / f"icc_simulated_masks_{RCFG.external_test_split_name}_{map_slug}_cohort_2.csv",
         )
 
     stable_sets = build_stability_summary(
@@ -122,7 +133,10 @@ def run_one_map_type(
     final_selection_df = resolve_feature_selection(stable_sets, RCFG.selection_mode)
     final_features = final_selection_df["feature"].astype(str).tolist()
 
-    save_csv(build_stable_table(df_cohort1, final_features), map_out_dir / f"stable_spectral_radiomics_{map_slug}.csv")
+    save_csv(
+        build_stable_table(df_cohort1, final_features),
+        map_out_dir / f"stable_spectral_radiomics_{map_slug}.csv",
+    )
     if df_cohort2 is not None and not df_cohort2.empty:
         save_csv(
             build_stable_table(df_cohort2, final_features),
@@ -135,7 +149,9 @@ def run_one_map_type(
         icc_manual_train=icc_manual_train,
         top_n=RCFG.top_n_profile_features,
     )
-    save_csv(pd.DataFrame({"feature": top_features}), tables_dir / f"top_profile_features_{map_slug}.csv")
+    save_csv(
+        pd.DataFrame({"feature": top_features}), tables_dir / f"top_profile_features_{map_slug}.csv"
+    )
 
     plot_icc_heatmap(
         icc_sim_train,
@@ -161,7 +177,8 @@ def run_one_map_type(
         plot_icc_heatmap(
             icc_sim_cohort2,
             f"ICC - {map_type} - simulated masks - cohort 2",
-            plots_dir / f"heatmap_icc_simulated_masks_{RCFG.external_test_split_name}_{map_slug}_cohort_2.png",
+            plots_dir
+            / f"heatmap_icc_simulated_masks_{RCFG.external_test_split_name}_{map_slug}_cohort_2.png",
         )
 
     # ICC histograms (train set only, one PNG per scenario per spectral map).
@@ -170,27 +187,45 @@ def run_one_map_type(
         map_type=map_type,
         scenario_label="Simulated masks ICC",
         threshold=RCFG.icc_threshold,
-        out_path=plots_dir / f"histogram_icc_simulated_masks_{RCFG.train_split_name}_{map_slug}.png",
+        out_path=plots_dir
+        / f"histogram_icc_simulated_masks_{RCFG.train_split_name}_{map_slug}.png",
     )
     plot_icc_histogram(
         icc_df=icc_manual_train,
         map_type=map_type,
         scenario_label="Manual vs model ICC",
         threshold=RCFG.icc_threshold,
-        out_path=plots_dir / f"histogram_icc_manual_vs_model_{RCFG.train_split_name}_{map_slug}.png",
+        out_path=plots_dir
+        / f"histogram_icc_manual_vs_model_{RCFG.train_split_name}_{map_slug}.png",
     )
 
     for feature in top_features:
-        plot_profile_simulated(df_train, feature, RCFG.train_split_name, RCFG.simulated_masks, plots_dir)
-        plot_profile_simulated(df_test, feature, RCFG.temporal_test_split_name, RCFG.simulated_masks, plots_dir)
-        plot_profile_manual(
-            df_train, feature, RCFG.train_split_name, RCFG.manual_level_order, RCFG.manual_rater_order, plots_dir
+        plot_profile_simulated(
+            df_train, feature, RCFG.train_split_name, RCFG.simulated_masks, plots_dir
+        )
+        plot_profile_simulated(
+            df_test, feature, RCFG.temporal_test_split_name, RCFG.simulated_masks, plots_dir
         )
         plot_profile_manual(
-            df_test, feature, RCFG.temporal_test_split_name, RCFG.manual_level_order, RCFG.manual_rater_order, plots_dir
+            df_train,
+            feature,
+            RCFG.train_split_name,
+            RCFG.manual_level_order,
+            RCFG.manual_rater_order,
+            plots_dir,
+        )
+        plot_profile_manual(
+            df_test,
+            feature,
+            RCFG.temporal_test_split_name,
+            RCFG.manual_level_order,
+            RCFG.manual_rater_order,
+            plots_dir,
         )
         if df_cohort2 is not None and not df_cohort2.empty:
-            plot_profile_simulated(df_cohort2, feature, RCFG.external_test_split_name, RCFG.simulated_masks, plots_dir)
+            plot_profile_simulated(
+                df_cohort2, feature, RCFG.external_test_split_name, RCFG.simulated_masks, plots_dir
+            )
 
     return {
         "map_type": map_type,
@@ -219,11 +254,17 @@ def main() -> None:
 
     required_cols = list(RCFG.metadata_cols)
 
-    df_features_cohort1 = load_features_table(RCFG.cohort1_features_csv, required_cols, table_name="cohort 1 spectral radiomics")
-    df_features_cohort2 = load_features_table(RCFG.cohort2_features_csv, required_cols, table_name="cohort 2 spectral radiomics")
+    df_features_cohort1 = load_features_table(
+        RCFG.cohort1_features_csv, required_cols, table_name="cohort 1 spectral radiomics"
+    )
+    df_features_cohort2 = load_features_table(
+        RCFG.cohort2_features_csv, required_cols, table_name="cohort 2 spectral radiomics"
+    )
 
     df_cohort1 = attach_splits(df_features_cohort1, df_gt, split_col=RCFG.split_col)
-    df_cohort2 = assign_constant_split(df_features_cohort2, RCFG.split_col, RCFG.external_test_split_name)
+    df_cohort2 = assign_constant_split(
+        df_features_cohort2, RCFG.split_col, RCFG.external_test_split_name
+    )
 
     features_c1 = detect_feature_columns(df_cohort1, RCFG.metadata_cols, RCFG.split_col)
     features_c2 = detect_feature_columns(df_cohort2, RCFG.metadata_cols, RCFG.split_col)
@@ -237,9 +278,13 @@ def main() -> None:
         print(f"Processing map type: {map_type}...")
         if map_type not in feature_groups:
             continue
-        summary_rows.append(run_one_map_type(df_cohort1, df_cohort2, map_type, feature_groups[map_type]))
+        summary_rows.append(
+            run_one_map_type(df_cohort1, df_cohort2, map_type, feature_groups[map_type])
+        )
 
-    save_csv(pd.DataFrame(summary_rows), RCFG.output_dir / "tables" / "map_type_selection_summary.csv")
+    save_csv(
+        pd.DataFrame(summary_rows), RCFG.output_dir / "tables" / "map_type_selection_summary.csv"
+    )
 
 
 if __name__ == "__main__":

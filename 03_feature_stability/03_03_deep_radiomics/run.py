@@ -92,14 +92,24 @@ def run_one_map_type(
         by_level=False,
     )
 
-    save_csv(icc_sim_train, tables_dir / f"icc_simulated_masks_{RCFG.cohort1_train_label}_{map_slug}.csv")
-    save_csv(icc_sim_test, tables_dir / f"icc_simulated_masks_{RCFG.cohort1_test_label}_{map_slug}.csv")
+    save_csv(
+        icc_sim_train, tables_dir / f"icc_simulated_masks_{RCFG.cohort1_train_label}_{map_slug}.csv"
+    )
+    save_csv(
+        icc_sim_test, tables_dir / f"icc_simulated_masks_{RCFG.cohort1_test_label}_{map_slug}.csv"
+    )
     save_csv(
         icc_sim_test_cohort_2,
         tables_dir / f"icc_simulated_masks_{RCFG.cohort2_test_label}_{map_slug}_cohort_2.csv",
     )
-    save_csv(icc_manual_train, tables_dir / f"icc_manual_vs_model_{RCFG.cohort1_train_label}_{map_slug}.csv")
-    save_csv(icc_manual_test, tables_dir / f"icc_manual_vs_model_{RCFG.cohort1_test_label}_{map_slug}.csv")
+    save_csv(
+        icc_manual_train,
+        tables_dir / f"icc_manual_vs_model_{RCFG.cohort1_train_label}_{map_slug}.csv",
+    )
+    save_csv(
+        icc_manual_test,
+        tables_dir / f"icc_manual_vs_model_{RCFG.cohort1_test_label}_{map_slug}.csv",
+    )
 
     # No feature filtering for deep radiomics: all original-mask features are retained.
     stable_table_cohort1 = build_stable_table(df_cohort1, feature_cols)
@@ -113,7 +123,9 @@ def run_one_map_type(
         icc_manual_train=icc_manual_train,
         top_n=RCFG.top_n_profile_features,
     )
-    save_csv(pd.DataFrame({"feature": top_features}), tables_dir / f"top_profile_features_{map_slug}.csv")
+    save_csv(
+        pd.DataFrame({"feature": top_features}), tables_dir / f"top_profile_features_{map_slug}.csv"
+    )
 
     plot_icc_heatmap(
         icc_sim_train,
@@ -128,7 +140,8 @@ def run_one_map_type(
     plot_icc_heatmap(
         icc_sim_test_cohort_2,
         f"ICC - {map_type} - simulated masks - cohort 2",
-        plots_dir / f"heatmap_icc_simulated_masks_{RCFG.cohort2_test_label}_{map_slug}_cohort_2.png",
+        plots_dir
+        / f"heatmap_icc_simulated_masks_{RCFG.cohort2_test_label}_{map_slug}_cohort_2.png",
     )
     plot_icc_heatmap(
         icc_manual_train,
@@ -142,14 +155,30 @@ def run_one_map_type(
     )
 
     for feature in top_features:
-        plot_profile_simulated(df_train, feature, RCFG.cohort1_train_label, RCFG.simulated_masks, plots_dir)
-        plot_profile_simulated(df_test, feature, RCFG.cohort1_test_label, RCFG.simulated_masks, plots_dir)
-        plot_profile_simulated(df_test_cohort_2, feature, RCFG.cohort2_test_label, RCFG.simulated_masks, plots_dir)
-        plot_profile_manual(
-            df_train, feature, RCFG.cohort1_train_label, RCFG.manual_level_order, RCFG.manual_rater_order, plots_dir
+        plot_profile_simulated(
+            df_train, feature, RCFG.cohort1_train_label, RCFG.simulated_masks, plots_dir
+        )
+        plot_profile_simulated(
+            df_test, feature, RCFG.cohort1_test_label, RCFG.simulated_masks, plots_dir
+        )
+        plot_profile_simulated(
+            df_test_cohort_2, feature, RCFG.cohort2_test_label, RCFG.simulated_masks, plots_dir
         )
         plot_profile_manual(
-            df_test, feature, RCFG.cohort1_test_label, RCFG.manual_level_order, RCFG.manual_rater_order, plots_dir
+            df_train,
+            feature,
+            RCFG.cohort1_train_label,
+            RCFG.manual_level_order,
+            RCFG.manual_rater_order,
+            plots_dir,
+        )
+        plot_profile_manual(
+            df_test,
+            feature,
+            RCFG.cohort1_test_label,
+            RCFG.manual_level_order,
+            RCFG.manual_rater_order,
+            plots_dir,
         )
 
     return {
@@ -161,7 +190,9 @@ def run_one_map_type(
     }
 
 
-def validate_feature_sets(df_cohort1: pd.DataFrame, df_cohort2: pd.DataFrame) -> Dict[str, List[str]]:
+def validate_feature_sets(
+    df_cohort1: pd.DataFrame, df_cohort2: pd.DataFrame
+) -> Dict[str, List[str]]:
     feature_cols_cohort1 = detect_feature_columns(
         df_cohort1,
         metadata_cols=RCFG.metadata_cols,
@@ -223,9 +254,13 @@ def main() -> None:
         if map_type not in feature_groups:
             continue
         print(f"Running deep radiomics stability for map type: {map_type}")
-        summary_rows.append(run_one_map_type(df_cohort1, df_cohort2, map_type, feature_groups[map_type]))
+        summary_rows.append(
+            run_one_map_type(df_cohort1, df_cohort2, map_type, feature_groups[map_type])
+        )
 
-    save_csv(pd.DataFrame(summary_rows), RCFG.output_dir / "tables" / "map_type_stability_summary.csv")
+    save_csv(
+        pd.DataFrame(summary_rows), RCFG.output_dir / "tables" / "map_type_stability_summary.csv"
+    )
     print(f"Processed map types: {len(summary_rows)}")
     print(f"Saved outputs to: {RCFG.output_dir}")
 

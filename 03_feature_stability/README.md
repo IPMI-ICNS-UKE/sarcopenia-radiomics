@@ -16,7 +16,7 @@ intraclass correlation) in two scenarios:
   comparing the two readers and the automated model (`i`/`j`/`a`) at the L2/L3/L4
   levels. 2D-only, since manual annotations only exist for single axial slices.
 
-## Notes
+## Method-specific behavior
 
 - `03_01_conventional_ct` and `03_03_deep_radiomics` compute and report stability
   but do not drop any features — SMI/MRA are fixed biomarkers, and deep-radiomics
@@ -67,7 +67,7 @@ Each stage writes to `<repo_root>/output/03_0X_<method>[_3d]/`:
   `plots/`, plus a top-level `tables/map_type_selection_summary.csv` (or
   `map_type_stability_summary.csv` for deep radiomics).
 
-## Notes on paths
+## Notes
 
 - `ground_truth_xlsx` in each `config.py` points to local data storage and
   must be adjusted to your own path before running.

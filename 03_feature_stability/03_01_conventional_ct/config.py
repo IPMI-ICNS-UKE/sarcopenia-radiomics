@@ -66,7 +66,9 @@ class RunConfig:
                 stage_out_dir / f"raw_baseline_ct_cohort_2{suffix}.csv",
             )
         if self.out_dir is None:
-            object.__setattr__(self, "out_dir", REPO_ROOT / "output" / f"03_01_conventional_ct{suffix}")
+            object.__setattr__(
+                self, "out_dir", REPO_ROOT / "output" / f"03_01_conventional_ct{suffix}"
+            )
         if self.feature_cols is None:
             object.__setattr__(
                 self, "feature_cols", ("smi_3d", "mra_3d") if self.use_3d else ("smi_2d", "mra_2d")

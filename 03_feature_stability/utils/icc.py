@@ -90,11 +90,7 @@ def add_manual_case_columns(
     patient_id_col: str = "patient_id",
 ) -> pd.DataFrame:
     """Convert masks such as i_l2, j_l2, a_l2 into level, rater, and subject-case columns."""
-    expected_masks = {
-        f"{r}_{level}"
-        for level in manual_levels
-        for r in manual_raters
-    }
+    expected_masks = {f"{r}_{level}" for level in manual_levels for r in manual_raters}
     out = df[df["mask"].isin(expected_masks)].copy()
     if out.empty:
         out["level"] = pd.Series(dtype=str)
@@ -102,22 +98,12 @@ def add_manual_case_columns(
         out["subject_case_id"] = pd.Series(dtype=str)
         return out
 
-    level_map = {
-        f"{r}_{level}": level
-        for level in manual_levels
-        for r in manual_raters
-    }
-    rater_map = {
-        f"{r}_{level}": r
-        for level in manual_levels
-        for r in manual_raters
-    }
+    level_map = {f"{r}_{level}": level for level in manual_levels for r in manual_raters}
+    rater_map = {f"{r}_{level}": r for level in manual_levels for r in manual_raters}
 
     out["level"] = out["mask"].map(level_map)
     out["manual_rater"] = out["mask"].map(rater_map)
-    out["subject_case_id"] = (
-        out[patient_id_col].astype(str) + "__" + out["level"].astype(str)
-    )
+    out["subject_case_id"] = out[patient_id_col].astype(str) + "__" + out["level"].astype(str)
     return out
 
 
@@ -193,7 +179,9 @@ def compute_manual_vs_model_icc(
 
         groups = [(None, df_manual)]
         if by_level:
-            groups = [(level, df_manual[df_manual["level"] == level].copy()) for level in manual_levels]
+            groups = [
+                (level, df_manual[df_manual["level"] == level].copy()) for level in manual_levels
+            ]
 
         for level, df_group in groups:
             for feature_col in feature_cols:
@@ -230,46 +218,46 @@ def build_stability_summary(
     icc_manual_train: pd.DataFrame,
     threshold: float,
 ) -> Dict[str, pd.DataFrame]:
-    sim = (
-        icc_sim_train[["feature", "icc"]]
-        .rename(columns={"icc": "icc_simulated_train"})
-        .copy()
-    )
-    man = (
-        icc_manual_train[["feature", "icc"]]
-        .rename(columns={"icc": "icc_manual_train"})
-        .copy()
-    )
+    sim = icc_sim_train[["feature", "icc"]].rename(columns={"icc": "icc_simulated_train"}).copy()
+    man = icc_manual_train[["feature", "icc"]].rename(columns={"icc": "icc_manual_train"}).copy()
 
     merged = sim.merge(man, on="feature", how="outer")
     merged["stable_simulated"] = merged["icc_simulated_train"] > threshold
     merged["stable_manual"] = merged["icc_manual_train"] > threshold
     merged["stable_both"] = merged["stable_simulated"] & merged["stable_manual"]
-    merged["mean_train_icc"] = merged[
-        ["icc_simulated_train", "icc_manual_train"]
-    ].mean(axis=1, skipna=False)
+    merged["mean_train_icc"] = merged[["icc_simulated_train", "icc_manual_train"]].mean(
+        axis=1, skipna=False
+    )
 
     return {
         "all": merged.sort_values(
             ["stable_both", "mean_train_icc", "feature"],
             ascending=[False, False, True],
         ).reset_index(drop=True),
-        "simulated": merged[merged["stable_simulated"]].sort_values(
+        "simulated": merged[merged["stable_simulated"]]
+        .sort_values(
             ["icc_simulated_train", "feature"],
             ascending=[False, True],
-        ).reset_index(drop=True),
-        "manual": merged[merged["stable_manual"]].sort_values(
+        )
+        .reset_index(drop=True),
+        "manual": merged[merged["stable_manual"]]
+        .sort_values(
             ["icc_manual_train", "feature"],
             ascending=[False, True],
-        ).reset_index(drop=True),
-        "both": merged[merged["stable_both"]].sort_values(
+        )
+        .reset_index(drop=True),
+        "both": merged[merged["stable_both"]]
+        .sort_values(
             ["mean_train_icc", "feature"],
             ascending=[False, True],
-        ).reset_index(drop=True),
+        )
+        .reset_index(drop=True),
     }
 
 
-def resolve_feature_selection(stable_sets: Dict[str, pd.DataFrame], selection_mode: str) -> pd.DataFrame:
+def resolve_feature_selection(
+    stable_sets: Dict[str, pd.DataFrame], selection_mode: str
+) -> pd.DataFrame:
     valid = {"simulated", "manual", "both"}
     if selection_mode not in valid:
         raise ValueError(f"selection_mode must be one of {sorted(valid)}, got: {selection_mode}")
@@ -289,7 +277,9 @@ def choose_top_profile_features(
     if icc_manual_train is not None and not icc_manual_train.empty:
         manual = icc_manual_train[cols].rename(columns={"icc": "icc_manual_train"}).copy()
         rank = rank.merge(manual, on="feature", how="outer")
-        rank["mean_train_icc"] = rank[["icc_simulated_train", "icc_manual_train"]].mean(axis=1, skipna=True)
+        rank["mean_train_icc"] = rank[["icc_simulated_train", "icc_manual_train"]].mean(
+            axis=1, skipna=True
+        )
     else:
         rank["mean_train_icc"] = rank["icc_simulated_train"]
 

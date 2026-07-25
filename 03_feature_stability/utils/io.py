@@ -104,17 +104,16 @@ def attach_splits(
 
     if df[split_col].isna().any():
         missing = (
-            df.loc[df[split_col].isna(), patient_id_col]
-            .astype(str)
-            .drop_duplicates()
-            .tolist()
+            df.loc[df[split_col].isna(), patient_id_col].astype(str).drop_duplicates().tolist()
         )
         raise ValueError(f"Could not assign train/test split to patients: {missing[:10]}")
 
     return df.reset_index(drop=True)
 
 
-def assign_constant_split(df_features: pd.DataFrame, split_col: str, split_name: str) -> pd.DataFrame:
+def assign_constant_split(
+    df_features: pd.DataFrame, split_col: str, split_name: str
+) -> pd.DataFrame:
     out = df_features.copy()
     out[split_col] = split_name
     return out.reset_index(drop=True)

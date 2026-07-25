@@ -29,7 +29,7 @@ class RunConfig:
         "status",
         "mask",
     )
-    keep_id_cols_in_stable_table: Tuple[str, ...] = ("patient_id", )
+    keep_id_cols_in_stable_table: Tuple[str, ...] = ("patient_id",)
 
     simulated_masks: Tuple[str, ...] = (
         "a_original",
@@ -84,7 +84,9 @@ class RunConfig:
                 stage_out_dir / f"raw_spectral_radiomics_cohort_2{suffix}.csv",
             )
         if self.output_dir is None:
-            object.__setattr__(self, "output_dir", REPO_ROOT / "output" / f"03_02_spectral_radiomics{suffix}")
+            object.__setattr__(
+                self, "output_dir", REPO_ROOT / "output" / f"03_02_spectral_radiomics{suffix}"
+            )
         if self.selection_mode is None:
             object.__setattr__(self, "selection_mode", "simulated" if self.use_3d else "both")
 
