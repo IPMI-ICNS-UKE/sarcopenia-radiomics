@@ -101,7 +101,9 @@ def perturb_mask_3d(mask_3d: sitk.Image, mode: str, radius: int) -> sitk.Image:
     return sitk.Cast(out_img, sitk.sitkUInt8)
 
 
-def apply_hu_threshold_to_mask(mask_2d: sitk.Image, ct_2d: sitk.Image, hu_min: float, hu_max: float) -> sitk.Image:
+def apply_hu_threshold_to_mask(
+    mask_2d: sitk.Image, ct_2d: sitk.Image, hu_min: float, hu_max: float
+) -> sitk.Image:
     if hu_min is None or hu_max is None:
         print("No HU thresholds provided, skipping HU-based masking.")
         return sitk.Cast(mask_2d, sitk.sitkUInt8)
@@ -128,12 +130,20 @@ def read_manual_pair_if_exists(labels_dir: Path, fname1: str, fname2: str) -> Op
     return combine_muscle_masks(m1, m2)
 
 
-def build_base_patient_context(patient_id: str, cohort_cfg: CohortConfig, run_cfg: CommonRunConfig) -> Dict[str, object]:
+def build_base_patient_context(
+    patient_id: str, cohort_cfg: CohortConfig, run_cfg: CommonRunConfig
+) -> Dict[str, object]:
     labels_dir = cohort_cfg.labels_root / patient_id
-    ct = read_ct_nifti(patient_id=patient_id, cohort_cfg=cohort_cfg, run_cfg=run_cfg, pixel_type=sitk.sitkFloat32)
+    ct = read_ct_nifti(
+        patient_id=patient_id, cohort_cfg=cohort_cfg, run_cfg=run_cfg, pixel_type=sitk.sitkFloat32
+    )
 
-    abw = resample_like(read_image(labels_dir / run_cfg.abdominal_wall, sitk.sitkInt16), ct, is_label=True)
-    para = resample_like(read_image(labels_dir / run_cfg.paravertebral, sitk.sitkInt16), ct, is_label=True)
+    abw = resample_like(
+        read_image(labels_dir / run_cfg.abdominal_wall, sitk.sitkInt16), ct, is_label=True
+    )
+    para = resample_like(
+        read_image(labels_dir / run_cfg.paravertebral, sitk.sitkInt16), ct, is_label=True
+    )
     l3 = resample_like(read_image(labels_dir / run_cfg.l3_mask, sitk.sitkInt16), ct, is_label=True)
 
     muscle = combine_muscle_masks(abw, para)
@@ -147,7 +157,9 @@ def build_base_patient_context(patient_id: str, cohort_cfg: CohortConfig, run_cf
     }
 
 
-def automated_l3_mask_variants(muscle_3d: sitk.Image, k_l3: int) -> List[Tuple[str, str, int, sitk.Image]]:
+def automated_l3_mask_variants(
+    muscle_3d: sitk.Image, k_l3: int
+) -> List[Tuple[str, str, int, sitk.Image]]:
     muscle_2d = sitk.Cast(extract_axial_slice(muscle_3d, k_l3), sitk.sitkUInt8)
     variants = [
         ("a_original", "original", 0),
@@ -240,21 +252,36 @@ def manual_and_model_masksets(
     if cohort_name != "cohort1" or int(manual_annotation_flag) != 1:
         return []
 
-    isabel_native = read_manual_pair_if_exists(labels_dir, run_cfg.abdominal_wall_i, run_cfg.paravertebral_i)
-    jenni_native = read_manual_pair_if_exists(labels_dir, run_cfg.abdominal_wall_j, run_cfg.paravertebral_j)
+    isabel_native = read_manual_pair_if_exists(
+        labels_dir, run_cfg.abdominal_wall_i, run_cfg.paravertebral_i
+    )
+    jenni_native = read_manual_pair_if_exists(
+        labels_dir, run_cfg.abdominal_wall_j, run_cfg.paravertebral_j
+    )
     if isabel_native is None or jenni_native is None:
         return []
 
     isabel = resample_like(isabel_native, ct, is_label=True)
     jenni = resample_like(jenni_native, ct, is_label=True)
 
-    shared_idx = sorted(set(get_nonempty_slice_indices(isabel)).intersection(get_nonempty_slice_indices(jenni)))
+    shared_idx = sorted(
+        set(get_nonempty_slice_indices(isabel)).intersection(get_nonempty_slice_indices(jenni))
+    )
     if len(shared_idx) != 3:
         return []
 
     out: List[Tuple[str, str, int, sitk.Image]] = []
     for level_name, idx_ct in zip(("l2", "l3", "l4"), shared_idx):
-        out.append((f"i_{level_name}", level_name, int(idx_ct), extract_axial_slice(isabel, idx_ct)))
+        out.append(
+            (f"i_{level_name}", level_name, int(idx_ct), extract_axial_slice(isabel, idx_ct))
+        )
         out.append((f"j_{level_name}", level_name, int(idx_ct), extract_axial_slice(jenni, idx_ct)))
-        out.append((f"a_{level_name}", level_name, int(idx_ct), extract_axial_slice(model_muscle_3d, idx_ct)))
+        out.append(
+            (
+                f"a_{level_name}",
+                level_name,
+                int(idx_ct),
+                extract_axial_slice(model_muscle_3d, idx_ct),
+            )
+        )
     return out

@@ -10,7 +10,9 @@ import SimpleITK as sitk
 from common_config import CohortConfig, CommonRunConfig
 
 
-def load_ground_truth(cohort_cfg: CohortConfig, run_cfg: CommonRunConfig, required_columns=None) -> pd.DataFrame:
+def load_ground_truth(
+    cohort_cfg: CohortConfig, run_cfg: CommonRunConfig, required_columns=None
+) -> pd.DataFrame:
     df = pd.read_excel(cohort_cfg.table_path)
 
     for col, val in run_cfg.filters:
@@ -33,6 +35,7 @@ def natural_patient_sort(patient_ids: List[str]) -> List[str]:
     def key(s: str):
         m = re.search(r"(\d+)", str(s))
         return (int(m.group(1)) if m else 0, str(s))
+
     return sorted(patient_ids, key=key)
 
 
@@ -42,8 +45,12 @@ def read_image(path: Path, pixel_type=sitk.sitkFloat32) -> sitk.Image:
     return sitk.ReadImage(str(path), pixel_type)
 
 
-def read_ct_nifti(patient_id: str, cohort_cfg: CohortConfig, run_cfg: CommonRunConfig, pixel_type=sitk.sitkFloat32) -> sitk.Image:
-    return read_image(cohort_cfg.images_root / patient_id / f"{patient_id}{run_cfg.ct_nifti_suffix}", pixel_type)
+def read_ct_nifti(
+    patient_id: str, cohort_cfg: CohortConfig, run_cfg: CommonRunConfig, pixel_type=sitk.sitkFloat32
+) -> sitk.Image:
+    return read_image(
+        cohort_cfg.images_root / patient_id / f"{patient_id}{run_cfg.ct_nifti_suffix}", pixel_type
+    )
 
 
 def same_grid(a: sitk.Image, b: sitk.Image, tol: float = 1e-5) -> bool:
@@ -58,7 +65,9 @@ def same_grid(a: sitk.Image, b: sitk.Image, tol: float = 1e-5) -> bool:
     return True
 
 
-def resample_like(moving: sitk.Image, fixed: sitk.Image, is_label: bool, default_value: float = 0.0) -> sitk.Image:
+def resample_like(
+    moving: sitk.Image, fixed: sitk.Image, is_label: bool, default_value: float = 0.0
+) -> sitk.Image:
     interpolator = sitk.sitkNearestNeighbor if is_label else sitk.sitkLinear
     out = sitk.Resample(
         moving,
@@ -134,10 +143,14 @@ def add_repo_to_syspath(path: Path) -> None:
 
 def get_torch_device():
     import torch
+
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def axial_index_from_reference_to_target(reference: sitk.Image, target: sitk.Image, k_reference: int) -> int:
+def axial_index_from_reference_to_target(
+    reference: sitk.Image, target: sitk.Image, k_reference: int
+) -> int:
     from mask import axial_index_from_phys
+
     phys = reference.TransformIndexToPhysicalPoint((0, 0, int(k_reference)))
     return axial_index_from_phys(target, phys)

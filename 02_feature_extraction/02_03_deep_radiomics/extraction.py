@@ -43,7 +43,9 @@ def read_all_images(patient_id: str, cohort_cfg: CohortConfig, run_cfg) -> Dict[
         if map_name == "ct":
             images[map_name] = read_ct_nifti(patient_id, cohort_cfg, run_cfg, sitk.sitkFloat32)
         else:
-            images[map_name] = read_image(patient_img_dir / f"{patient_id}-{file_stub}.nii.gz", sitk.sitkFloat32)
+            images[map_name] = read_image(
+                patient_img_dir / f"{patient_id}-{file_stub}.nii.gz", sitk.sitkFloat32
+            )
 
     return images
 
@@ -226,15 +228,17 @@ def process_patient(
         ]
 
     except Exception as e:
-        return [{
-            "patient_id": patient_id,
-            "cohort": cohort_cfg.cohort_name,
-            "status": "failed",
-            "mask": "",
-            "slice_name": "",
-            "backbone_name": run_cfg.backbone_name.lower(),
-            "error": repr(e),
-        }]
+        return [
+            {
+                "patient_id": patient_id,
+                "cohort": cohort_cfg.cohort_name,
+                "status": "failed",
+                "mask": "",
+                "slice_name": "",
+                "backbone_name": run_cfg.backbone_name.lower(),
+                "error": repr(e),
+            }
+        ]
 
 
 def run_cohort(cohort_cfg: CohortConfig, run_cfg) -> pd.DataFrame:
@@ -248,11 +252,22 @@ def run_cohort(cohort_cfg: CohortConfig, run_cfg) -> pd.DataFrame:
 
     desc = f"Processing {cohort_cfg.cohort_name} [{run_cfg.mode}]"
     for _, row in tqdm(df_gt.iterrows(), total=len(df_gt), desc=desc):
-        rows.extend(process_patient(row=row, cohort_cfg=cohort_cfg, run_cfg=run_cfg, model=model, device=device))
+        rows.extend(
+            process_patient(
+                row=row, cohort_cfg=cohort_cfg, run_cfg=run_cfg, model=model, device=device
+            )
+        )
 
     out_df = pd.DataFrame(rows)
     preferred_cols = ["patient_id", "cohort", "status", "mask"]
-    cols_to_drop = ["slice_name", "slice_index", "slice_index_ct", "error", "backbone_name", "n_pixels"]
+    cols_to_drop = [
+        "slice_name",
+        "slice_index",
+        "slice_index_ct",
+        "error",
+        "backbone_name",
+        "n_pixels",
+    ]
     out_df = out_df.drop(columns=[c for c in cols_to_drop if c in out_df.columns])
 
     existing = [c for c in preferred_cols if c in out_df.columns]

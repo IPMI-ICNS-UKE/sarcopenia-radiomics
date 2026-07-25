@@ -48,34 +48,37 @@ class CommonRunConfig:
 class RadiomicsRunConfig(CommonRunConfig):
     crop_margin_px: int = 10
 
-    map_file_names: Dict[str, str] = field(default_factory=lambda: {
-        "ct": "HU",
-        "vnc": "VNC",
-        "musclefat": "MuscleFat",
-        "iodine": "Iodine",
-        "electrondensity": "ElectronDensity",
-        "effectivez": "EffectiveZ",
-        "40kev": "40keV",
-        "60kev": "60keV",
-        "80kev": "80keV",
-        "100kev": "100keV",
-        "120kev": "120keV",
+    map_file_names: Dict[str, str] = field(
+        default_factory=lambda: {
+            "ct": "HU",
+            "vnc": "VNC",
+            "musclefat": "MuscleFat",
+            "iodine": "Iodine",
+            "electrondensity": "ElectronDensity",
+            "effectivez": "EffectiveZ",
+            "40kev": "40keV",
+            "60kev": "60keV",
+            "80kev": "80keV",
+            "100kev": "100keV",
+            "120kev": "120keV",
+        }
+    )
 
-    })
-
-    pyradiomics_yaml: Dict[str, Path] = field(default_factory=lambda: {
-        "ct": REPO_ROOT / "configs" / "pyradiomics_2d_5bw_allfilt_allfeat.yaml",
-        "vnc": REPO_ROOT / "configs" / "pyradiomics_2d_5bw_allfilt_allfeat.yaml",
-        "musclefat": REPO_ROOT / "configs" / "pyradiomics_2d_2bw_allfilt_allfeat.yaml",
-        "electrondensity": REPO_ROOT / "configs" / "pyradiomics_2d_1bw_allfilt_allfeat.yaml",
-        "iodine": REPO_ROOT / "configs" / "pyradiomics_2d_025bw_allfilt_allfeat.yaml",
-        "effectivez": REPO_ROOT / "configs" / "pyradiomics_2d_01bw_allfilt_allfeat.yaml",
-        "40kev": REPO_ROOT / "configs" / "pyradiomics_2d_5bw_allfilt_allfeat.yaml",
-        "60kev": REPO_ROOT / "configs" / "pyradiomics_2d_5bw_allfilt_allfeat.yaml",
-        "80kev": REPO_ROOT / "configs" / "pyradiomics_2d_5bw_allfilt_allfeat.yaml",
-        "100kev": REPO_ROOT / "configs" / "pyradiomics_2d_5bw_allfilt_allfeat.yaml",
-        "120kev": REPO_ROOT / "configs" / "pyradiomics_2d_5bw_allfilt_allfeat.yaml",
-    })
+    pyradiomics_yaml: Dict[str, Path] = field(
+        default_factory=lambda: {
+            "ct": REPO_ROOT / "configs" / "pyradiomics_2d_5bw_allfilt_allfeat.yaml",
+            "vnc": REPO_ROOT / "configs" / "pyradiomics_2d_5bw_allfilt_allfeat.yaml",
+            "musclefat": REPO_ROOT / "configs" / "pyradiomics_2d_2bw_allfilt_allfeat.yaml",
+            "electrondensity": REPO_ROOT / "configs" / "pyradiomics_2d_1bw_allfilt_allfeat.yaml",
+            "iodine": REPO_ROOT / "configs" / "pyradiomics_2d_025bw_allfilt_allfeat.yaml",
+            "effectivez": REPO_ROOT / "configs" / "pyradiomics_2d_01bw_allfilt_allfeat.yaml",
+            "40kev": REPO_ROOT / "configs" / "pyradiomics_2d_5bw_allfilt_allfeat.yaml",
+            "60kev": REPO_ROOT / "configs" / "pyradiomics_2d_5bw_allfilt_allfeat.yaml",
+            "80kev": REPO_ROOT / "configs" / "pyradiomics_2d_5bw_allfilt_allfeat.yaml",
+            "100kev": REPO_ROOT / "configs" / "pyradiomics_2d_5bw_allfilt_allfeat.yaml",
+            "120kev": REPO_ROOT / "configs" / "pyradiomics_2d_5bw_allfilt_allfeat.yaml",
+        }
+    )
 
 
 @dataclass(frozen=True)
@@ -106,45 +109,52 @@ class DeepRadiomicsRunConfig(CommonRunConfig):
 
     eps: float = 1e-8
 
-    map_file_names: Dict[str, str] = field(default_factory=lambda: {
-        "ct": "HU",
-        "vnc": "VNC",
-        "musclefat": "MuscleFat",
-        "iodine": "Iodine",
-        "electrondensity": "ElectronDensity",
-        "effectivez": "EffectiveZ",
-        "40kev": "40keV",
-        "60kev": "60keV",
-        "80kev": "80keV",
-        "100kev": "100keV",
-        "120kev": "120keV",
+    map_file_names: Dict[str, str] = field(
+        default_factory=lambda: {
+            "ct": "HU",
+            "vnc": "VNC",
+            "musclefat": "MuscleFat",
+            "iodine": "Iodine",
+            "electrondensity": "ElectronDensity",
+            "effectivez": "EffectiveZ",
+            "40kev": "40keV",
+            "60kev": "60keV",
+            "80kev": "80keV",
+            "100kev": "100keV",
+            "120kev": "120keV",
+        }
+    )
 
-    })
-
-    meddinov3_map_specs: Dict[str, MapPreprocSpec] = field(default_factory=lambda: {
-        "ct": MapPreprocSpec(-1000.0, 1000.0, -1024.0, 65.0, 180.0),
-        "vnc": MapPreprocSpec(-1000.0, 1000.0, -1024.0, 65.0, 180.0),
-        "musclefat": MapPreprocSpec(0.0, 100.0, 0.0, 20.0, 35.0),
-        "effectivez": MapPreprocSpec(0.0, 30.0, 0.0, 4.0, 6.0),
-        "electrondensity": MapPreprocSpec(0.0, 500.0, 0.0, 100.0, 150.0),
-        "iodine": MapPreprocSpec(0.0, 40.0, 0.0, 0.50, 1.0),
-        "40kev": MapPreprocSpec(-1000.0, 1000.0, -1024.0, 65.0, 180.0),
-        "60kev": MapPreprocSpec(-1000.0, 1000.0, -1024.0, 65.0, 180.0),
-        "80kev": MapPreprocSpec(-1000.0, 1000.0, -1024.0, 65.0, 180.0),
-        "100kev": MapPreprocSpec(-1000.0, 1000.0, -1024.0, 65.0, 180.0),
-        "120kev": MapPreprocSpec(-1000.0, 1000.0, -1024.0, 65.0, 180.0),
-    })
+    meddinov3_map_specs: Dict[str, MapPreprocSpec] = field(
+        default_factory=lambda: {
+            "ct": MapPreprocSpec(-1000.0, 1000.0, -1024.0, 65.0, 180.0),
+            "vnc": MapPreprocSpec(-1000.0, 1000.0, -1024.0, 65.0, 180.0),
+            "musclefat": MapPreprocSpec(0.0, 100.0, 0.0, 20.0, 35.0),
+            "effectivez": MapPreprocSpec(0.0, 30.0, 0.0, 4.0, 6.0),
+            "electrondensity": MapPreprocSpec(0.0, 500.0, 0.0, 100.0, 150.0),
+            "iodine": MapPreprocSpec(0.0, 40.0, 0.0, 0.50, 1.0),
+            "40kev": MapPreprocSpec(-1000.0, 1000.0, -1024.0, 65.0, 180.0),
+            "60kev": MapPreprocSpec(-1000.0, 1000.0, -1024.0, 65.0, 180.0),
+            "80kev": MapPreprocSpec(-1000.0, 1000.0, -1024.0, 65.0, 180.0),
+            "100kev": MapPreprocSpec(-1000.0, 1000.0, -1024.0, 65.0, 180.0),
+            "120kev": MapPreprocSpec(-1000.0, 1000.0, -1024.0, 65.0, 180.0),
+        }
+    )
 
 
 COHORT1 = CohortConfig(
-    table_path=Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaData/table/ground_truth.xlsx"),
+    table_path=Path(
+        "/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaData/table/ground_truth.xlsx"
+    ),
     images_root=Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaData/imagesAll"),
     labels_root=Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaData/labelsAll"),
     cohort_name="cohort1",
 )
 
 COHORT2 = CohortConfig(
-    table_path=Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/table/ground_truth.xlsx"),
+    table_path=Path(
+        "/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/table/ground_truth.xlsx"
+    ),
     images_root=Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/imagesAll"),
     labels_root=Path("/home/gkolokolnikov/PhD_project/vault_data/SarcopeniaDataLiver/labelsAll"),
     cohort_name="cohort2",

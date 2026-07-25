@@ -25,7 +25,9 @@ from mask import (
 )
 
 
-def process_patient_2d(row: pd.Series, cohort_cfg: CohortConfig, run_cfg, ctx, height_m: float) -> List[Dict[str, object]]:
+def process_patient_2d(
+    row: pd.Series, cohort_cfg: CohortConfig, run_cfg, ctx, height_m: float
+) -> List[Dict[str, object]]:
     patient_id = str(row["Pat ID"])
     manual_annotation_flag = (
         int(row["manual_annotation"])
@@ -64,7 +66,9 @@ def process_patient_2d(row: pd.Series, cohort_cfg: CohortConfig, run_cfg, ctx, h
     return rows
 
 
-def process_patient_3d(row: pd.Series, cohort_cfg: CohortConfig, run_cfg, ctx, height_m: float) -> List[Dict[str, object]]:
+def process_patient_3d(
+    row: pd.Series, cohort_cfg: CohortConfig, run_cfg, ctx, height_m: float
+) -> List[Dict[str, object]]:
     patient_id = str(row["Pat ID"])
     masksets_3d = automated_3d_mask_variants(ctx["muscle"])
 
@@ -94,13 +98,15 @@ def process_patient(row: pd.Series, cohort_cfg: CohortConfig, run_cfg) -> List[D
         return process_patient_2d(row, cohort_cfg, run_cfg, ctx, height_m)
 
     except Exception as e:
-        return [{
-            "patient_id": patient_id,
-            "cohort": cohort_cfg.cohort_name,
-            "status": "failed",
-            "mask": "",
-            "error": repr(e),
-        }]
+        return [
+            {
+                "patient_id": patient_id,
+                "cohort": cohort_cfg.cohort_name,
+                "status": "failed",
+                "mask": "",
+                "error": repr(e),
+            }
+        ]
 
 
 def run_cohort(cohort_cfg: CohortConfig, run_cfg) -> pd.DataFrame:

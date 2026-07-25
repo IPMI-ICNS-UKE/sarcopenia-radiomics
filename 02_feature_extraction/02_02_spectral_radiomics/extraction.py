@@ -37,7 +37,9 @@ def read_all_images(patient_id: str, cohort_cfg: CohortConfig, run_cfg) -> Dict[
         if map_name == "ct":
             images[map_name] = read_ct_nifti(patient_id, cohort_cfg, run_cfg, sitk.sitkFloat32)
         else:
-            images[map_name] = read_image(patient_img_dir / f"{patient_id}-{file_stub}.nii.gz", sitk.sitkFloat32)
+            images[map_name] = read_image(
+                patient_img_dir / f"{patient_id}-{file_stub}.nii.gz", sitk.sitkFloat32
+            )
 
     return images
 
@@ -72,7 +74,11 @@ def extract_one_maskset_all_maps(
     }
 
     for map_name, img3d in images.items():
-        idx_img = slice_index_ct if map_name == "ct" else ct_index_to_other_image_index(ct, img3d, slice_index_ct)
+        idx_img = (
+            slice_index_ct
+            if map_name == "ct"
+            else ct_index_to_other_image_index(ct, img3d, slice_index_ct)
+        )
         image_2d = extract_axial_slice(img3d, idx_img)
 
         try:
@@ -218,14 +224,16 @@ def process_patient(
         ]
 
     except Exception as e:
-        return [{
-            "patient_id": patient_id,
-            "cohort": cohort_cfg.cohort_name,
-            "status": "failed",
-            "mask": "",
-            "slice_name": "",
-            "error": repr(e),
-        }]
+        return [
+            {
+                "patient_id": patient_id,
+                "cohort": cohort_cfg.cohort_name,
+                "status": "failed",
+                "mask": "",
+                "slice_name": "",
+                "error": repr(e),
+            }
+        ]
 
 
 def build_extractors(run_cfg) -> Dict[str, featureextractor.RadiomicsFeatureExtractor]:
@@ -246,7 +254,9 @@ def run_cohort(cohort_cfg: CohortConfig, run_cfg) -> pd.DataFrame:
 
     desc = f"Processing {cohort_cfg.cohort_name} [{run_cfg.mode}]"
     for _, row in tqdm(df_gt.iterrows(), total=len(df_gt), desc=desc):
-        rows.extend(process_patient(row=row, cohort_cfg=cohort_cfg, run_cfg=run_cfg, extractors=extractors))
+        rows.extend(
+            process_patient(row=row, cohort_cfg=cohort_cfg, run_cfg=run_cfg, extractors=extractors)
+        )
 
     out_df = pd.DataFrame(rows)
     preferred_cols = ["patient_id", "cohort", "status", "mask"]

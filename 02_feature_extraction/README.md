@@ -21,7 +21,7 @@ Shared logic is stored in `utils/`:
 
 ## Required companion folders
 
-The default config paths assume the following live at the repository root:
+The default config paths assume the following is available at the repository root:
 
 | Path | Contents | Used by |
 |---|---|---|
@@ -75,7 +75,7 @@ cfg_3d = replace(RCFG, mode="3d")
 df_3d = run_cohort(COHORT1, cfg_3d)
 ```
 
-## Output files
+## Output layout
 
 Each method writes separate CSVs per mode and cohort to
 `<repo_root>/output/<method>/`:

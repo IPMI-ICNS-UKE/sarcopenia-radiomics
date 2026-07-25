@@ -56,7 +56,7 @@ def pad_to_square_np(img: np.ndarray, fill_value: float) -> np.ndarray:
     out = np.full((side, side), fill_value, dtype=np.float32)
     y0 = (side - h) // 2
     x0 = (side - w) // 2
-    out[y0:y0 + h, x0:x0 + w] = img.astype(np.float32)
+    out[y0 : y0 + h, x0 : x0 + w] = img.astype(np.float32)
     return out
 
 
@@ -66,7 +66,7 @@ def pad_to_square_mask(mask: np.ndarray) -> np.ndarray:
     out = np.zeros((side, side), dtype=np.uint8)
     y0 = (side - h) // 2
     x0 = (side - w) // 2
-    out[y0:y0 + h, x0:x0 + w] = mask.astype(np.uint8)
+    out[y0 : y0 + h, x0 : x0 + w] = mask.astype(np.uint8)
     return out
 
 
@@ -79,13 +79,13 @@ def apply_pixel_mask(img: np.ndarray, mask: np.ndarray, fill_value: float) -> np
 def choose_preproc_spec(map_name: str, run_cfg: DeepRadiomicsRunConfig) -> MapPreprocSpec:
     specs = run_cfg.meddinov3_map_specs
     if map_name not in specs:
-        raise ValueError(
-            f"Unknown map_name={map_name!r}. Configured maps: {sorted(specs.keys())}"
-        )
+        raise ValueError(f"Unknown map_name={map_name!r}. Configured maps: {sorted(specs.keys())}")
     return specs[map_name]
 
 
-def clip_then_zscore_meddinov3(img: np.ndarray, map_name: str, run_cfg: DeepRadiomicsRunConfig) -> np.ndarray:
+def clip_then_zscore_meddinov3(
+    img: np.ndarray, map_name: str, run_cfg: DeepRadiomicsRunConfig
+) -> np.ndarray:
     spec = choose_preproc_spec(map_name, run_cfg)
     x = np.clip(img.astype(np.float32), float(spec.clip_min), float(spec.clip_max))
     x = (x - float(spec.mean)) / (float(spec.std) + float(run_cfg.eps))
@@ -155,7 +155,9 @@ def compute_deep_features_on_slice(
     device: torch.device,
     run_cfg: DeepRadiomicsRunConfig,
 ) -> Dict[str, object]:
-    mask_thr_ct_2d = apply_hu_threshold_to_mask(mask_2d_ct_grid, ct_2d, hu_min=hu_min, hu_max=hu_max)
+    mask_thr_ct_2d = apply_hu_threshold_to_mask(
+        mask_2d_ct_grid, ct_2d, hu_min=hu_min, hu_max=hu_max
+    )
     mask_thr_img_2d = resample_like(mask_thr_ct_2d, image_2d, is_label=True)
     mask_thr_img_2d = sitk.Cast(to_binary_mask(mask_thr_img_2d), sitk.sitkUInt8)
 
@@ -226,7 +228,9 @@ def compute_deep_features_3d(
     """
     # CT restricted to the mask sub-grid -> guaranteed co-grid, cheap HU threshold.
     ct_on_mask = resample_like(ct_3d, mask_3d_ct_grid, is_label=False)
-    mask_thr_ct_3d = apply_hu_threshold_to_mask(mask_3d_ct_grid, ct_on_mask, hu_min=hu_min, hu_max=hu_max)
+    mask_thr_ct_3d = apply_hu_threshold_to_mask(
+        mask_3d_ct_grid, ct_on_mask, hu_min=hu_min, hu_max=hu_max
+    )
 
     # Map restricted to the muscle region at its native resolution.
     img_region = crop_image_to_reference_region(image_3d, mask_3d_ct_grid, margin_xyz=(2, 2, 2))

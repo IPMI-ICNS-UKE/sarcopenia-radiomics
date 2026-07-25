@@ -20,7 +20,7 @@ def area_cm2_avg_over_slices_3d(mask3d: sitk.Image) -> float:
     """Mean axial muscle area (cm^2) over non-empty slices of a 3D mask."""
     mask_u8 = sitk.Cast(mask3d > 0, sitk.sitkUInt8)
     arr = sitk.GetArrayFromImage(mask_u8)  # (z, y, x)
-    spacing = mask3d.GetSpacing()          # (x, y, z)
+    spacing = mask3d.GetSpacing()  # (x, y, z)
     pixel_area_mm2 = float(spacing[0]) * float(spacing[1])
 
     per_slice_counts = arr.reshape(arr.shape[0], -1).sum(axis=1)
@@ -52,7 +52,7 @@ def mean_in_mask(img: sitk.Image, mask: sitk.Image) -> float:
 def compute_smi(area_cm2: float, height_m: float) -> float:
     if pd.isna(area_cm2) or pd.isna(height_m) or height_m <= 0:
         return float("nan")
-    return float(area_cm2 / (height_m ** 2))
+    return float(area_cm2 / (height_m**2))
 
 
 # Backward-compatible alias

@@ -7,7 +7,9 @@ from imaging_io import crop_image_to_reference_region, resample_like
 from mask import apply_hu_threshold_to_mask, clip_lower, to_binary_mask
 
 
-def make_radiomics_extractor(params_yaml, mode: str = "2d") -> featureextractor.RadiomicsFeatureExtractor:
+def make_radiomics_extractor(
+    params_yaml, mode: str = "2d"
+) -> featureextractor.RadiomicsFeatureExtractor:
     extractor = featureextractor.RadiomicsFeatureExtractor(str(params_yaml))
     if str(mode) == "3d":
         # The shipped YAMLs are tuned for slice-wise (force2D) extraction.
@@ -18,7 +20,9 @@ def make_radiomics_extractor(params_yaml, mode: str = "2d") -> featureextractor.
     return extractor
 
 
-def crop_2d_to_mask_bbox(image2d: sitk.Image, mask2d: sitk.Image, margin_px: int) -> Tuple[sitk.Image, sitk.Image]:
+def crop_2d_to_mask_bbox(
+    image2d: sitk.Image, mask2d: sitk.Image, margin_px: int
+) -> Tuple[sitk.Image, sitk.Image]:
     mask_u8 = sitk.Cast(mask2d > 0, sitk.sitkUInt8)
 
     stats = sitk.LabelShapeStatisticsImageFilter()
@@ -106,12 +110,16 @@ def compute_radiomics_on_slice(
     crop_margin_px: int,
     extractor: featureextractor.RadiomicsFeatureExtractor,
 ) -> Dict[str, object]:
-    mask_thr_ct_2d = apply_hu_threshold_to_mask(mask_2d_ct_grid, ct_2d, hu_min=hu_min, hu_max=hu_max)
+    mask_thr_ct_2d = apply_hu_threshold_to_mask(
+        mask_2d_ct_grid, ct_2d, hu_min=hu_min, hu_max=hu_max
+    )
     mask_thr_img_2d = resample_like(mask_thr_ct_2d, image_2d, is_label=True)
     mask_thr_img_2d = sitk.Cast(to_binary_mask(mask_thr_img_2d), sitk.sitkUInt8)
     image_2d = preprocess_map(map_name, image_2d)
 
-    n_pix_mask_2d = int(sitk.GetArrayViewFromImage(sitk.Cast(mask_2d_ct_grid, sitk.sitkUInt8)).sum())
+    n_pix_mask_2d = int(
+        sitk.GetArrayViewFromImage(sitk.Cast(mask_2d_ct_grid, sitk.sitkUInt8)).sum()
+    )
     n_pix_mask_2d_thr_ct = int(sitk.GetArrayViewFromImage(mask_thr_ct_2d).sum())
     n_pix_mask_2d_thr_img = int(sitk.GetArrayViewFromImage(mask_thr_img_2d).sum())
 
@@ -138,7 +146,9 @@ def compute_radiomics_on_slice(
         row["error"] = "Empty HU-thresholded mask on image grid."
         return row
 
-    image_crop, mask_crop = crop_2d_to_mask_bbox(image_2d, mask_thr_img_2d, margin_px=crop_margin_px)
+    image_crop, mask_crop = crop_2d_to_mask_bbox(
+        image_2d, mask_thr_img_2d, margin_px=crop_margin_px
+    )
     rad_result = extractor.execute(image_crop, mask_crop)
     row.update(clean_radiomics_output(rad_result, map_name=map_name))
     return row
@@ -168,7 +178,9 @@ def compute_radiomics_3d(
     """
     # CT restricted to the mask sub-grid -> guaranteed co-grid, cheap HU threshold.
     ct_on_mask = resample_like(ct_3d, mask_3d_ct_grid, is_label=False)
-    mask_thr_ct_3d = apply_hu_threshold_to_mask(mask_3d_ct_grid, ct_on_mask, hu_min=hu_min, hu_max=hu_max)
+    mask_thr_ct_3d = apply_hu_threshold_to_mask(
+        mask_3d_ct_grid, ct_on_mask, hu_min=hu_min, hu_max=hu_max
+    )
 
     # Spectral map restricted to the muscle region at its native resolution.
     img_region = crop_image_to_reference_region(image_3d, mask_3d_ct_grid, margin_xyz=(2, 2, 2))
@@ -177,7 +189,9 @@ def compute_radiomics_3d(
     mask_thr_img_3d = resample_like(mask_thr_ct_3d, img_region, is_label=True)
     mask_thr_img_3d = sitk.Cast(to_binary_mask(mask_thr_img_3d), sitk.sitkUInt8)
 
-    n_pix_mask_3d = int(sitk.GetArrayViewFromImage(sitk.Cast(mask_3d_ct_grid, sitk.sitkUInt8)).sum())
+    n_pix_mask_3d = int(
+        sitk.GetArrayViewFromImage(sitk.Cast(mask_3d_ct_grid, sitk.sitkUInt8)).sum()
+    )
     n_pix_mask_3d_thr_ct = int(sitk.GetArrayViewFromImage(mask_thr_ct_3d).sum())
     n_pix_mask_3d_thr_img = int(sitk.GetArrayViewFromImage(mask_thr_img_3d).sum())
 
