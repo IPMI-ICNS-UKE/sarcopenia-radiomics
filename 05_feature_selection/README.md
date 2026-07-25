@@ -1,7 +1,7 @@
 # 05_feature_selection
 
 LASSO-based feature selection (Appendix S5, "Selection of Informative
-Handcrafted Radiomics Features") and final biomarker/signature export for
+Handcrafted Radiomics Features") and final biomarker/feature set export for
 modeling, per imaging feature family:
 
 - `05_01_conventional_ct` — SMI / MRA signature export, **no selection**
@@ -17,13 +17,12 @@ modeling, per imaging feature family:
   pipeline, run separately per spectral map on `04_feature_filtering`'s
   filtered/stable handcrafted radiomics features.
 - `05_03_deep_radiomics` — MedDINOv3 embedding signature export, **no
-  selection** (matches the main text: deep-radiomics features are used
+  selection** (deep-radiomics features are used
   unfiltered). Reads directly from `02_feature_extraction`'s raw output,
   restricted to `status == "ok"` and `mask == "a_original"`.
 
 ## LASSO selection pipeline (`05_02_02`)
 
-According to Appendix S5:
 1. Median imputation (training-set medians) and standardization
    (`StandardScaler`, fit on training data only), inside an sklearn `Pipeline`.
 2. L1-penalized logistic regression (`solver="saga"`, `class_weight="balanced"`,
@@ -32,8 +31,7 @@ According to Appendix S5:
    (`random_state=42`), scored on AUC, over the 16-point log-spaced `C` grid
    (0.001–100). Ties are broken toward the smaller `C` — this falls out of
    `GridSearchCV`'s default behavior (it picks the first-ranked entry in grid
-   order, and the grid is ascending), matching the paper's stated tie-break
-   rule without needing extra logic.
+   order, and the grid is ascending).
 4. Features with non-zero coefficients at the selected `C` are the final
    signature.
 
@@ -81,7 +79,7 @@ Each stage writes to `<repo_root>/output/05_0X_<method>[_3d]/`:
   signature CSV(s) and a `tables/` (and, for `05_02_02`, `plots/` — CV tuning
   curve, coefficient paths, selected coefficients, selection frequency).
 
-## Notes on paths
+## Notes
 
 - `ground_truth_path` / `ground_truth_path_cohort_2` in `utils/config.py`
   (`BaseStage05Config`) point to local data storage and must be adjusted to

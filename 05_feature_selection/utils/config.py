@@ -75,9 +75,13 @@ class ConventionalCTConfig(BaseStage05Config):
     def __post_init__(self) -> None:
         suffix = "_3d" if self.use_3d else ""
         if self.feature_root is None:
-            object.__setattr__(self, "feature_root", REPO_ROOT / "output" / f"04_01_conventional_ct{suffix}")
+            object.__setattr__(
+                self, "feature_root", REPO_ROOT / "output" / f"04_01_conventional_ct{suffix}"
+            )
         if self.output_root is None:
-            object.__setattr__(self, "output_root", REPO_ROOT / "output" / f"05_01_conventional_ct{suffix}")
+            object.__setattr__(
+                self, "output_root", REPO_ROOT / "output" / f"05_01_conventional_ct{suffix}"
+            )
         if self.feature_cols is None:
             object.__setattr__(
                 self, "feature_cols", ("smi_3d", "mra_3d") if self.use_3d else ("smi_2d", "mra_2d")
@@ -123,14 +127,20 @@ class SpectralMeanFractionConfig(BaseStage05Config):
         suffix = "_3d" if self.use_3d else ""
         stage_dir = REPO_ROOT / "output" / "02_02_spectral_radiomics"
         if self.raw_features_path is None:
-            object.__setattr__(self, "raw_features_path", stage_dir / f"raw_spectral_radiomics{suffix}.csv")
+            object.__setattr__(
+                self, "raw_features_path", stage_dir / f"raw_spectral_radiomics{suffix}.csv"
+            )
         if self.raw_features_path_cohort_2 is None:
             object.__setattr__(
-                self, "raw_features_path_cohort_2", stage_dir / f"raw_spectral_radiomics_cohort_2{suffix}.csv"
+                self,
+                "raw_features_path_cohort_2",
+                stage_dir / f"raw_spectral_radiomics_cohort_2{suffix}.csv",
             )
         if self.output_root is None:
             object.__setattr__(
-                self, "output_root", REPO_ROOT / "output" / f"05_02_spectral_radiomics_mean_fraction{suffix}"
+                self,
+                "output_root",
+                REPO_ROOT / "output" / f"05_02_spectral_radiomics_mean_fraction{suffix}",
             )
 
 
@@ -167,11 +177,22 @@ class SpectralSignatureConfig(BaseStage05Config):
     tol: float = 1e-4
     scoring: str = "roc_auc"
     c_grid: Tuple[float, ...] = (
-        0.001, 0.002, 0.005,
-        0.01, 0.02, 0.05,
-        0.1, 0.2, 0.5,
-        1.0, 2.0, 5.0,
-        10.0, 20.0, 50.0, 100.0,
+        0.001,
+        0.002,
+        0.005,
+        0.01,
+        0.02,
+        0.05,
+        0.1,
+        0.2,
+        0.5,
+        1.0,
+        2.0,
+        5.0,
+        10.0,
+        20.0,
+        50.0,
+        100.0,
     )
     selection_frequency_repeats: int = 100
     selection_frequency_threshold: float = 0.0
@@ -183,10 +204,14 @@ class SpectralSignatureConfig(BaseStage05Config):
     def __post_init__(self) -> None:
         suffix = "_3d" if self.use_3d else ""
         if self.filtered_root is None:
-            object.__setattr__(self, "filtered_root", REPO_ROOT / "output" / f"04_02_spectral_radiomics{suffix}")
+            object.__setattr__(
+                self, "filtered_root", REPO_ROOT / "output" / f"04_02_spectral_radiomics{suffix}"
+            )
         if self.output_root is None:
             object.__setattr__(
-                self, "output_root", REPO_ROOT / "output" / f"05_02_spectral_radiomics_signature{suffix}"
+                self,
+                "output_root",
+                REPO_ROOT / "output" / f"05_02_spectral_radiomics_signature{suffix}",
             )
 
 
@@ -252,10 +277,16 @@ class DeepRadiomicsConfig(BaseStage05Config):
         suffix = "_3d" if self.use_3d else ""
         stage_dir = REPO_ROOT / "output" / "02_03_deep_radiomics"
         if self.raw_features_path is None:
-            object.__setattr__(self, "raw_features_path", stage_dir / f"raw_deep_radiomics{suffix}.csv")
+            object.__setattr__(
+                self, "raw_features_path", stage_dir / f"raw_deep_radiomics{suffix}.csv"
+            )
         if self.raw_features_path_cohort_2 is None:
             object.__setattr__(
-                self, "raw_features_path_cohort_2", stage_dir / f"raw_deep_radiomics_cohort_2{suffix}.csv"
+                self,
+                "raw_features_path_cohort_2",
+                stage_dir / f"raw_deep_radiomics_cohort_2{suffix}.csv",
             )
         if self.output_root_raw is None:
-            object.__setattr__(self, "output_root_raw", REPO_ROOT / "output" / f"05_03_deep_radiomics{suffix}")
+            object.__setattr__(
+                self, "output_root_raw", REPO_ROOT / "output" / f"05_03_deep_radiomics{suffix}"
+            )

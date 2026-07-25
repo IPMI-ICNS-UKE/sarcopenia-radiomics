@@ -8,7 +8,13 @@ if str(STAGE_ROOT) not in sys.path:
     sys.path.insert(0, str(STAGE_ROOT))
 
 from utils.config import DeepRadiomicsConfig
-from utils.io import ensure_method_dirs, load_csv, load_ground_truth, merge_features_with_ground_truth, save_json
+from utils.io import (
+    ensure_method_dirs,
+    load_csv,
+    load_ground_truth,
+    merge_features_with_ground_truth,
+    save_json,
+)
 from utils.signature import make_signature_dataset, summarize_signature
 
 
@@ -18,9 +24,8 @@ def _filter_raw_features(df: pd.DataFrame, cfg: DeepRadiomicsConfig) -> pd.DataF
     if missing:
         raise KeyError(f"Missing required raw deep-radiomics columns: {missing}")
 
-    mask = (
-        (df[cfg.status_col].astype(str) == cfg.required_status_value)
-        & (df[cfg.mask_col].astype(str) == cfg.required_mask_value)
+    mask = (df[cfg.status_col].astype(str) == cfg.required_status_value) & (
+        df[cfg.mask_col].astype(str) == cfg.required_mask_value
     )
 
     out = df.loc[mask].copy()
@@ -37,8 +42,7 @@ def _filter_raw_features(df: pd.DataFrame, cfg: DeepRadiomicsConfig) -> pd.DataF
 def _deep_feature_columns(df: pd.DataFrame, source_map_name: str) -> List[str]:
     suffix = f"_{source_map_name}"
     feature_cols = [
-        c for c in df.columns
-        if c.endswith(suffix) and (c.startswith("d") or c.startswith("pc"))
+        c for c in df.columns if c.endswith(suffix) and (c.startswith("d") or c.startswith("pc"))
     ]
     if not feature_cols:
         raise ValueError(f"No deep-radiomics feature columns found for map suffix {suffix!r}.")
@@ -133,6 +137,7 @@ def main() -> None:
                 run_raw_one_map_one_cohort(cfg, map_name, cohort_key)
             except Exception as exc:
                 print(f"Failed RAW for map={map_name}, cohort={cohort_key}: {exc!r}")
+
 
 if __name__ == "__main__":
     main()

@@ -46,9 +46,17 @@ def prepare_data_for_selection(
     if train_df.empty:
         raise ValueError("No training rows available.")
     if train_df["task_target"].isna().any():
-        raise ValueError(f"Training target contains {int(train_df['task_target'].isna().sum())} missing values.")
+        raise ValueError(
+            f"Training target contains {int(train_df['task_target'].isna().sum())} missing values."
+        )
 
-    excluded = {cfg.patient_id_col, cfg.cohort_col, cfg.split_col, cfg.temporal_flag_col, "task_target"}
+    excluded = {
+        cfg.patient_id_col,
+        cfg.cohort_col,
+        cfg.split_col,
+        cfg.temporal_flag_col,
+        "task_target",
+    }
     feature_cols_before = [c for c in full_df.columns if c not in excluded]
 
     full_df_num, dropped_non_numeric = _coerce_numeric(full_df, feature_cols_before)
@@ -60,8 +68,7 @@ def prepare_data_for_selection(
     candidate_cols = [c for c in candidate_cols if c not in set(dropped_all_missing)]
 
     dropped_low_coverage = [
-        c for c in candidate_cols
-        if train_df[c].notna().mean() < cfg.min_non_missing_fraction
+        c for c in candidate_cols if train_df[c].notna().mean() < cfg.min_non_missing_fraction
     ]
     candidate_cols = [c for c in candidate_cols if c not in set(dropped_low_coverage)]
 
@@ -142,7 +149,9 @@ def extract_selected_coefficients(search: GridSearchCV, feature_cols: List[str])
     coef_df = pd.DataFrame({"feature": feature_cols, "coefficient": coefs})
     coef_df["abs_coefficient"] = coef_df["coefficient"].abs()
     coef_df["selected"] = coef_df["coefficient"] != 0
-    return coef_df.sort_values(["selected", "abs_coefficient"], ascending=[False, False]).reset_index(drop=True)
+    return coef_df.sort_values(
+        ["selected", "abs_coefficient"], ascending=[False, False]
+    ).reset_index(drop=True)
 
 
 def compute_coefficient_paths(
@@ -162,7 +171,9 @@ def compute_coefficient_paths(
     return pd.DataFrame(rows)
 
 
-def _draw_bootstrap_indices(y_train: pd.Series, rng: np.random.RandomState, stratified: bool) -> np.ndarray:
+def _draw_bootstrap_indices(
+    y_train: pd.Series, rng: np.random.RandomState, stratified: bool
+) -> np.ndarray:
     y = pd.Series(y_train).reset_index(drop=True)
     n = len(y)
     if not stratified:
@@ -210,15 +221,21 @@ def _selection_frequency_bootstrap(
     if total_fits == 0:
         raise RuntimeError("No bootstrap fits were completed.")
 
-    return pd.DataFrame({
-        "feature": feature_cols,
-        "selection_count": selected_counts,
-        "n_repeats": total_fits,
-        "selection_frequency": selected_counts / total_fits,
-        "mean_coefficient": coef_sums / total_fits,
-        "abs_mean_coefficient": abs_coef_sums / total_fits,
-        "stability_method": "bootstrap",
-    }).sort_values(["selection_frequency", "abs_mean_coefficient"], ascending=[False, False]).reset_index(drop=True)
+    return (
+        pd.DataFrame(
+            {
+                "feature": feature_cols,
+                "selection_count": selected_counts,
+                "n_repeats": total_fits,
+                "selection_frequency": selected_counts / total_fits,
+                "mean_coefficient": coef_sums / total_fits,
+                "abs_mean_coefficient": abs_coef_sums / total_fits,
+                "stability_method": "bootstrap",
+            }
+        )
+        .sort_values(["selection_frequency", "abs_mean_coefficient"], ascending=[False, False])
+        .reset_index(drop=True)
+    )
 
 
 def _selection_frequency_repeated_kfold(
@@ -253,15 +270,21 @@ def _selection_frequency_repeated_kfold(
         abs_coef_sums += np.abs(coef)
         total_fits += 1
 
-    return pd.DataFrame({
-        "feature": feature_cols,
-        "selection_count": selected_counts,
-        "n_repeats": total_fits,
-        "selection_frequency": selected_counts / total_fits,
-        "mean_coefficient": coef_sums / total_fits,
-        "abs_mean_coefficient": abs_coef_sums / total_fits,
-        "stability_method": "repeated_stratified_kfold",
-    }).sort_values(["selection_frequency", "abs_mean_coefficient"], ascending=[False, False]).reset_index(drop=True)
+    return (
+        pd.DataFrame(
+            {
+                "feature": feature_cols,
+                "selection_count": selected_counts,
+                "n_repeats": total_fits,
+                "selection_frequency": selected_counts / total_fits,
+                "mean_coefficient": coef_sums / total_fits,
+                "abs_mean_coefficient": abs_coef_sums / total_fits,
+                "stability_method": "repeated_stratified_kfold",
+            }
+        )
+        .sort_values(["selection_frequency", "abs_mean_coefficient"], ascending=[False, False])
+        .reset_index(drop=True)
+    )
 
 
 def compute_selection_frequency(
@@ -276,7 +299,9 @@ def compute_selection_frequency(
         return _selection_frequency_bootstrap(X_train, y_train, feature_cols, best_c, cfg)
     if method == "repeated_stratified_kfold":
         return _selection_frequency_repeated_kfold(X_train, y_train, feature_cols, best_c, cfg)
-    raise ValueError("Unsupported stability_resampling_method. Use 'bootstrap' or 'repeated_stratified_kfold'.")
+    raise ValueError(
+        "Unsupported stability_resampling_method. Use 'bootstrap' or 'repeated_stratified_kfold'."
+    )
 
 
 def summarize_selection(

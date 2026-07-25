@@ -94,7 +94,9 @@ def merge_features_with_ground_truth(
         raise ValueError("No overlapping patients after feature/ground-truth merge.")
 
     if cfg.split_col in features_df.columns:
-        mismatch_mask = merged[cfg.split_col].astype(str) != merged[f"{cfg.split_col}_gt"].astype(str)
+        mismatch_mask = merged[cfg.split_col].astype(str) != merged[f"{cfg.split_col}_gt"].astype(
+            str
+        )
         split_mismatches = merged.loc[
             mismatch_mask,
             [cfg.patient_id_col, cfg.split_col, f"{cfg.split_col}_gt"],

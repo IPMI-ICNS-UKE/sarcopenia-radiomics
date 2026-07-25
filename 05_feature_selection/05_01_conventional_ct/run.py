@@ -5,7 +5,13 @@ STAGE_ROOT = Path(__file__).resolve().parents[1]
 if str(STAGE_ROOT) not in sys.path:
     sys.path.insert(0, str(STAGE_ROOT))
 from utils.config import ConventionalCTConfig
-from utils.io import ensure_method_dirs, load_csv, load_ground_truth, merge_features_with_ground_truth, save_json
+from utils.io import (
+    ensure_method_dirs,
+    load_csv,
+    load_ground_truth,
+    merge_features_with_ground_truth,
+    save_json,
+)
 from utils.signature import make_signature_dataset, summarize_signature
 
 

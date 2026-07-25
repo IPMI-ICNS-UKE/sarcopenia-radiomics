@@ -45,7 +45,9 @@ def save_selected_coefficients_plot(coef_df: pd.DataFrame, out_path: Path, top_n
 def save_selection_frequency_plot(freq_df: pd.DataFrame, out_path: Path, top_n: int = 25) -> None:
     if freq_df.empty:
         return
-    plot_df = freq_df.sort_values(["selection_frequency", "abs_mean_coefficient"], ascending=[False, False]).head(top_n)
+    plot_df = freq_df.sort_values(
+        ["selection_frequency", "abs_mean_coefficient"], ascending=[False, False]
+    ).head(top_n)
     fig, ax = plt.subplots(figsize=(10, max(4, 0.35 * len(plot_df))))
     ax.barh(plot_df["feature"], plot_df["selection_frequency"])
     ax.set_xlabel("Selection frequency")
@@ -89,13 +91,13 @@ def save_coefficient_path_plot(
         return
 
     pivot = path_df.pivot(index="C", columns="feature", values="coefficient").sort_index()
-    keep_cols = (
-        pivot.abs().max(axis=0).sort_values(ascending=False).head(max_lines).index.tolist()
-    )
+    keep_cols = pivot.abs().max(axis=0).sort_values(ascending=False).head(max_lines).index.tolist()
 
     c_values = pivot.index.to_numpy(dtype=float)
     if np.any(c_values <= 0):
-        raise ValueError("Coefficient-path plot requires strictly positive C values for log scaling.")
+        raise ValueError(
+            "Coefficient-path plot requires strictly positive C values for log scaling."
+        )
     log_c = np.log10(c_values)
 
     with sns.axes_style("whitegrid"), sns.plotting_context("paper", font_scale=1.15):

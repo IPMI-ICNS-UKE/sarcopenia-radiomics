@@ -31,7 +31,9 @@ from utils.selection import (
 from utils.signature import make_signature_dataset
 
 
-def _select_features_from_training(prepared, search, coef_df, freq_df, cfg: SpectralSignatureConfig):
+def _select_features_from_training(
+    prepared, search, coef_df, freq_df, cfg: SpectralSignatureConfig
+):
     selected_features = coef_df.loc[coef_df["selected"], "feature"].tolist()
     if cfg.selection_frequency_threshold > 0:
         stable = set(
@@ -91,7 +93,9 @@ def run_one_map(cfg: SpectralSignatureConfig, map_name: str) -> None:
         selected_features,
     )
 
-    path_df = compute_coefficient_paths(prepared.X_train, prepared.y_train, prepared.feature_cols_after, cfg)
+    path_df = compute_coefficient_paths(
+        prepared.X_train, prepared.y_train, prepared.feature_cols_after, cfg
+    )
     cv_results = pd.DataFrame(search.cv_results_).copy()
     cv_results["C"] = cv_results["param_model__C"].astype(float)
 
@@ -100,15 +104,33 @@ def run_one_map(cfg: SpectralSignatureConfig, map_name: str) -> None:
     signature_base = cfg.signature_template.format(map_name=map_name)
 
     cohort_1_signature.to_csv(dirs["map_dir"] / signature_base, index=False)
-    cohort_2_signature.to_csv(dirs["map_dir"] / signature_base.replace(".csv", f"{suffix}.csv"), index=False)
+    cohort_2_signature.to_csv(
+        dirs["map_dir"] / signature_base.replace(".csv", f"{suffix}.csv"), index=False
+    )
 
-    coef_df.to_csv(dirs["tables_dir"] / f"coefficients_spectral_radiomics_signature_{map_name}.csv", index=False)
-    freq_df.to_csv(dirs["tables_dir"] / f"selection_frequency_spectral_radiomics_signature_{map_name}.csv", index=False)
-    cv_results.to_csv(dirs["tables_dir"] / f"cv_results_spectral_radiomics_signature_{map_name}.csv", index=False)
-    path_df.to_csv(dirs["tables_dir"] / f"coefficient_paths_spectral_radiomics_signature_{map_name}.csv", index=False)
-    split_mismatches.to_csv(dirs["tables_dir"] / f"split_mismatches_spectral_radiomics_signature_{map_name}.csv", index=False)
+    coef_df.to_csv(
+        dirs["tables_dir"] / f"coefficients_spectral_radiomics_signature_{map_name}.csv",
+        index=False,
+    )
+    freq_df.to_csv(
+        dirs["tables_dir"] / f"selection_frequency_spectral_radiomics_signature_{map_name}.csv",
+        index=False,
+    )
+    cv_results.to_csv(
+        dirs["tables_dir"] / f"cv_results_spectral_radiomics_signature_{map_name}.csv", index=False
+    )
+    path_df.to_csv(
+        dirs["tables_dir"] / f"coefficient_paths_spectral_radiomics_signature_{map_name}.csv",
+        index=False,
+    )
+    split_mismatches.to_csv(
+        dirs["tables_dir"] / f"split_mismatches_spectral_radiomics_signature_{map_name}.csv",
+        index=False,
+    )
     split_mismatches_cohort_2.to_csv(
-        dirs["tables_dir"] / f"split_mismatches_spectral_radiomics_signature_{map_name}{suffix}.csv", index=False
+        dirs["tables_dir"]
+        / f"split_mismatches_spectral_radiomics_signature_{map_name}{suffix}.csv",
+        index=False,
     )
 
     summary = summarize_selection(prepared, search, coef_df, freq_df, cfg, map_name)
