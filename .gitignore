@@ -219,8 +219,11 @@ __marimo__/
 
 # Project-specific
 .vscode
+.claude
 *.pt
 *.pth
 *.torch
 external/*
 !external/README.md
+output/*
+!output/README.md
